@@ -1,6 +1,7 @@
 import React     from 'react';
 import Card      from 'react-bootstrap/Card'
-import CardDeck from 'react-bootstrap/CardDeck'
+import CardDeck  from 'react-bootstrap/CardDeck'
+import Button    from 'react-bootstrap/Button'
 
 //define the home page component
 //add card deck with cards
@@ -19,6 +20,7 @@ const Home = () => (
             </Card.Body>
             <Card.Footer>
               <small className="text-muted">Last updated 3 mins ago</small>
+              <Button variant="info">More Info</Button>
             </Card.Footer>
           </Card>
           <Card>
@@ -31,6 +33,7 @@ const Home = () => (
             </Card.Body>
             <Card.Footer>
               <small className="text-muted">Last updated 3 mins ago</small>
+              <Button variant="info">More Info</Button>
             </Card.Footer>
           </Card>
           <Card>
@@ -43,6 +46,7 @@ const Home = () => (
             </Card.Body>
             <Card.Footer>
               <small className="text-muted">Last updated 3 mins ago</small>
+              <Button variant="info">More Info</Button>
             </Card.Footer>
           </Card>
         </CardDeck>

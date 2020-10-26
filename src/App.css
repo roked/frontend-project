@@ -7,3 +7,12 @@ h1 {
     text-align: center;
     margin: 0.5px 3px;
 }
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.text-muted {
+    align-self: center;
+}
