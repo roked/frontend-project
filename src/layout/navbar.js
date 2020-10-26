@@ -4,9 +4,9 @@ import Nav from 'react-bootstrap/Nav'
 
 //define the default layout component
 //the child components go inside using props.children
-const NavbarL = (props) => ( 
+const NavbarL = (props) => (     
     <div> 
-        <Navbar bg="dark" variant="dark">
+        <Navbar bg="dark" variant="dark" expand="lg">
               <Navbar.Brand href="#">Real Estate Listing</Navbar.Brand>
               <Navbar.Toggle aria-controls="basic-navbar-nav" />
               <Navbar.Collapse id="basic-navbar-nav">
