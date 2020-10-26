@@ -1,6 +1,6 @@
 import React, {useState}  from 'react';
-import Form   from 'react-bootstrap/Form'
-import Button from 'react-bootstrap/Button'
+import Form               from 'react-bootstrap/Form';
+import Button             from 'react-bootstrap/Button';
 
 //define the login page component
 const Login = () => {
@@ -18,7 +18,7 @@ const Login = () => {
     
     return(
         <div className="container">
-            <h1 id="loginTitle">Nice to meet you seller. Let's get started!</h1>
+            <h1 className="pageTitle">Nice to meet you seller. Let's get started!</h1>
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
                 <Form.Label>Email address</Form.Label>

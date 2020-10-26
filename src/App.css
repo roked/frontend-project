@@ -3,8 +3,8 @@
     color: white;
 }
 
-#loginTitle {
-    margin: 0.5em 0 0.5em 0;
+#cardTitle {
+    margin: 0;
 }
 
 #round {
@@ -35,4 +35,17 @@ form {
 
 .form-group {
     margin: 1rem;
+}
+
+.card {
+    max-width: 50%;
+    margin: auto auto 5em auto;
+}
+
+.container { 
+    min-height: 100vh;
+}
+
+.pageTitle {
+    margin: 0.5em 0 0.5em 0;
 }

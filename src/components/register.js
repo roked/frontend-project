@@ -1,12 +1,13 @@
 import React, {useState}  from 'react';
-import Form   from 'react-bootstrap/Form'
-import Button from 'react-bootstrap/Button'
+import Form   from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 
 //define the login page component
 //TODO - add password check
 const Register = () => {
     const [validated, setValidated] = useState(false);
 
+    //this function checks the input validity on submit
     const handleSubmit = (event) => {
       const form = event.currentTarget;
       if (form.checkValidity() === false) {
@@ -18,7 +19,7 @@ const Register = () => {
     
     return(
         <div className="container">
-            <h1 id="loginTitle">First time here? You're have one more step!</h1>
+            <h1 className="pageTitle">First time here? You're have one more step!</h1>
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
                 <Form.Label>Email address</Form.Label>
