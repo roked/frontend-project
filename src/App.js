@@ -1,3 +1,5 @@
+//Read more why to use functions https://stackoverflow.com/questions/36097965/when-to-use-es6-class-based-react-components-vs-functional-es6-react-components
+
 import React from 'react';
 import {
   BrowserRouter as Router,
@@ -36,5 +38,4 @@ export default function App() {
         </Router>
         );
 }
-
         

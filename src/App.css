@@ -3,9 +3,24 @@
     color: white;
 }
 
+#loginTitle {
+    margin: 0.5em 0 0.5em 0;
+}
+
+#round {
+    border-radius: inherit;
+}
+
 h1 {
     text-align: center;
     margin: 0.5px 3px;
+}
+
+form {
+    border: 1px solid gray;
+    border-radius: 0.7em;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-footer {
@@ -15,4 +30,9 @@ h1 {
 
 .text-muted {
     align-self: center;
+}
+
+
+.form-group {
+    margin: 1rem;
 }
