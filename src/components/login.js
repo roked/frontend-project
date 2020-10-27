@@ -42,7 +42,7 @@ const Login = () => {
                 </Form.Control.Feedback>
               </Form.Group>
 
-              <Button id="round" variant="primary" type="submit">
+              <Button className="round" variant="primary" type="submit">
                 Sign In!
               </Button>
             </Form>
