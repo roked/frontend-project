@@ -63,7 +63,7 @@ const Register = () => {
                 />
               </Form.Group>
 
-              <Button id="round" variant="primary" type="submit">
+              <Button className="round" variant="primary" type="submit">
                 Sign Up!
               </Button>
             </Form>

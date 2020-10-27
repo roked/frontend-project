@@ -7,10 +7,6 @@
     margin: 0;
 }
 
-#round {
-    border-radius: inherit;
-}
-
 h1 {
     text-align: center;
     margin: 0.5px 3px;
@@ -48,4 +44,13 @@ form {
 
 .pageTitle {
     margin: 0.5em 0 0.5em 0;
+}
+
+.checkBox {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.round {
+    border-radius: inherit;
 }

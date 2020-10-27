@@ -17,7 +17,10 @@ const Home = () => {
     
     return(
         <div className="container">
-            <h1 className="pageTitle">Our active listings!</h1>
+            <div className="my-2">
+                <h1 className="pageTitle">Our active listings!</h1>
+                <Button href="/property/new" variant="info">Sell Now!</Button>                
+            </div>
             <CardDeck>
               <Card>
                 <Card.Img variant="top" src="https://images.unsplash.com/photo-1570076146047-06848c7b8226?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80" />
