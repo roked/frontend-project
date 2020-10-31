@@ -29,7 +29,8 @@ const Property = () => {
                 </ListGroup>    
               <Card.Footer>
                 <big className="text-muted">Price: £30000</big>
-                <Button variant="info">Contact Seller!</Button>
+                <Button href="/property/edit" variant="warning">Edit Property</Button>
+                <Button variant="info">Contact Seller</Button>
               </Card.Footer>
             </Card>
         </div>
