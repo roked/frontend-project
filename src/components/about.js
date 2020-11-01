@@ -1,6 +1,6 @@
 import React from 'react';
 
-//define the login page component
+//define the login page function component
 const About = () => {
     return(
         <div>

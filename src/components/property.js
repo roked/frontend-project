@@ -5,7 +5,7 @@ import ListGroup        from 'react-bootstrap/ListGroup';
 import ListGroupItem    from 'react-bootstrap/ListGroupItem';
 
 
-//define the property page component
+//define the property page function component
 //add card which will hold the information
 const Property = () => {
     return(

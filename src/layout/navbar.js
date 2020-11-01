@@ -2,7 +2,7 @@ import React  from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav    from 'react-bootstrap/Nav';
 
-//define the default layout component
+//define the default layout function component
 //the child components go inside using props.children
 const NavbarL = (props) => {
     return(     

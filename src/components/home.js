@@ -1,13 +1,18 @@
-import React     from 'react';
+import React, { useState, useEffect }     from 'react';
 import Card      from 'react-bootstrap/Card';
 import CardDeck  from 'react-bootstrap/CardDeck';
 import Button    from 'react-bootstrap/Button';
+import fetch     from 'node-fetch';
+import base64    from 'base-64';
 
-//define the home page component
+//define the home page function component
 //add card deck with cards
 //TODO - use a loop and show all properties 
 //TODO - make sure more info shows the currect property
 const Home = () => {
+    //using react hook function useState to controll the state
+    const [data, setData] = useState([]);
+    
     //truncate the description
     function Truncate(props){
         //the max lenght of a description
@@ -15,8 +20,27 @@ const Home = () => {
         return <Card.Text> {props.name.length > maxLenght ? props.name.substring(0, maxLenght) + "..." : props.name} </Card.Text>;
     }
     
+    //lifecycle method
+    //useEffect is called immediately after the component is mounted to the DOM
+    useEffect(() => {
+        async function fetchData() {
+            // send HTTP request
+            const result = await getProperties();
+            // save response to variable
+            setData(result);
+        }   
+        fetchData();    
+    }, []);    
+    
     return(
         <div className="container">
+            
+     <ul>
+       {data.map(item => <li key={item}>{item}</li>)}
+     </ul>
+
+            
+            
             <div className="my-2">
                 <h1 className="pageTitle">Our active listings!</h1>
                 <Button href="/property/new" variant="info">Sell Now!</Button>                
@@ -64,6 +88,33 @@ const Home = () => {
             </CardDeck>
         </div>
     );
+}
+
+/**
+ * The function will fetch all properties from the RESTApi
+ *
+ * @name Get the all properties
+ * @returns {Object} all properties saved in the DB
+ */
+async function getProperties() {
+    const username = "donchevm@coventry.ac.uk";
+    const password = "Kvadratura44!"
+    
+    let headers = new Headers();
+
+    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    
+    try{
+        const settings = { method: 'Get' , headers: headers};
+
+        const getData = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
+            .then(res => console.log(res))
+            .then((json) => json);
+
+        return getData;
+    } catch(err) {
+        console.log(err);
+    }
 }
 
 export default Home;
