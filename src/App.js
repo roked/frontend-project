@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 
 //import all pages at once
-import { Home, Login, About, Register, Property, NewProperty } from './components'
+import { Home, Login, About, Register, Property, NewProperty, EditProperty } from './components'
 //import the layout component
 import { NavbarL, Footer } from './layout';
 //import css style
@@ -16,11 +16,15 @@ import './App.css';
 
 //wrapping everything inside Layout component
 //define and export the app function 
+//TODO - add id to the property and edit pages
 export default function App() {
     return (
         <Router>
             <NavbarL />
             <Switch>
+                <Route path="/property/edit">
+                    <EditProperty />
+                </Route>
                 <Route path="/property/new">
                     <NewProperty />
                 </Route>

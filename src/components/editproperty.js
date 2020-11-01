@@ -3,9 +3,9 @@ import Form   from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Col    from 'react-bootstrap/Col';
 
-//define the new proprty page function component
+//define the edit proprty page component
 //TODO - https://www.npmjs.com/package/bs-custom-file-input - makes Bootstrap 4 custom file input dynamic with no dependencies.
-const NewProperty = () => {
+const EditProperty = () => {
     const [validated, setValidated] = useState(false);
 
     //this function checks the input validity on submit
@@ -20,7 +20,7 @@ const NewProperty = () => {
     
     return(
         <div className="container">
-            <h1 className="pageTitle">Let's gather some information. Please complete the form!</h1>            
+            <h1 className="pageTitle">Something new? You can press 'Update' when you are ready!</h1>            
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
                   <Form.Row>
                     <Form.Group as={Col} md="3" controlId="validationTitle">
@@ -70,7 +70,7 @@ const NewProperty = () => {
                     <Form.Group as={Col} md="3" controlId="validationSatus">
                       <Form.Label>Status</Form.Label>
                       <Form.Control name="status" as="select" custom required>
-                        <option>New</option>
+                        <option>Under Offer</option>
                         <option>High Priority</option>
                         <option>Unpublish</option>
                       </Form.Control>
@@ -115,10 +115,10 @@ const NewProperty = () => {
                      feedback="You must agree before submitting."
                    />
                  </Form.Group>
-                 <Button className="round" type="submit" variant="success">Publish property!</Button>
+                 <Button className="round" type="submit" variant="success">Update!</Button>
              </Form>
         </div>
     );
 }
 
-export default NewProperty;
+export default EditProperty;
