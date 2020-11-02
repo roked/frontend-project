@@ -3,7 +3,7 @@ import Form   from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Col    from 'react-bootstrap/Col';
 
-//define the new proprty page component
+//define the new proprty page function component
 //TODO - https://www.npmjs.com/package/bs-custom-file-input - makes Bootstrap 4 custom file input dynamic with no dependencies.
 const NewProperty = () => {
     const [validated, setValidated] = useState(false);

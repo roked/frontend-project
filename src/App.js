@@ -4,7 +4,7 @@ import React from 'react';
 import {
   BrowserRouter as Router,
   Switch,
-  Route
+  Route,
 } from "react-router-dom";
 
 //import all pages at once
@@ -17,7 +17,7 @@ import './App.css';
 //wrapping everything inside Layout component
 //define and export the app function 
 //TODO - add id to the property and edit pages
-export default function App() {
+export default function App() {    
     return (
         <Router>
             <NavbarL />
@@ -28,7 +28,7 @@ export default function App() {
                 <Route path="/property/new">
                     <NewProperty />
                 </Route>
-                <Route path="/property">
+                <Route path="/property/:id">
                     <Property />
                 </Route>
                 <Route path="/register">
