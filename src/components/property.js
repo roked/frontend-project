@@ -68,6 +68,7 @@ const Property = (props) => {
  * The function will fetch all properties from the RESTApi
  *
  * @name Get the all properties
+ * @param {Integer} id - the id of the property
  * @returns {Object} all properties saved in the DB
  */
 async function getProperty(id) {
