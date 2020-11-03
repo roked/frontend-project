@@ -34,8 +34,8 @@ form {
 }
 
 .card {
-    max-width: 50%;
     margin: auto auto 5em auto;
+    min-height: 324px;
 }
 
 .container { 

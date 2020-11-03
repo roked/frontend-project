@@ -18,7 +18,7 @@ const NewProperty = () => {
     const [category, setCategory] = useState("");
     const [status, setStatus] = useState("");
     const [location, setLocation] = useState("");
-    const [images, setImages] = useState([]);
+    const [images, setImages] = useState();
     const [features, setFeatures] = useState([]);
     const [description, setDescription] = useState([""]);
     
@@ -44,20 +44,19 @@ const NewProperty = () => {
           category: category,
           location: location,
           status: status,
-          image: images,
           features: features,
           description: description
       }  
       
       //send the property to the backend
-      async function postData(data) {
+      async function postData(images, data) {
           // send HTTP request
-          const response = await createProperty(data);
+          const response = await createProperty(images, data);
           console.log(response)
       }   
         
       //call the function
-      postData(data);    
+      postData(images, data);    
         
       setValidated(true);
     };   
@@ -165,8 +164,8 @@ const NewProperty = () => {
                       <Form.File 
                           id="files-input"
                           name="images"
-                          value={images}
-                          onChange={e => setImages(e.target.value)}
+                          defaultValue={images}
+                          onChange={e => setImages(e.target.files)}
                           multiple
                        />
                     </Form.Group>
@@ -219,21 +218,32 @@ const NewProperty = () => {
  * @param {Object} property - the property info
  * @returns {Boolean} true - if everything is fine
  */
-async function createProperty(property) {
+async function createProperty(images, property) {
     //get the username and password from env variables
     const username = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
+    
+    console.log(images)
+    
+    //create new form data which will be sent to the backend
+    const data = new FormData();
+    for(let i=0; i<images.length; i++) {
+       data.append('file', images[i])
+    }
+    
+    //place each value from the property object as part of the formData
+    Object.keys(property).forEach(key => data.append(key, property[key]));
     
     //set new header in order to add the credentials
     let headers = new Headers();  
     
     //auth credentials to access the backend API
-    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-    //set the content type to json
-    headers.append('Content-Type', 'application/json');
+    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password), 'Accept', 'application/json');
+//     //set the content type to form-data
+//     headers.append('Content-Type', 'multipart/form-data');
     
     try{
-        const settings = { method: 'post', body: JSON.stringify(property), withCredentials: true, credentials: 'include', headers: headers };
+        const settings = { method: 'post', body: data, withCredentials: true, credentials: 'include', headers: headers };
 
         console.log(settings);
         

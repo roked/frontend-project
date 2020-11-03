@@ -45,19 +45,23 @@ const Home = () => {
                 <Button href="/property/new" variant="info">Sell Now!</Button>                
             </div>
             <CardDeck>
-            {data.map(item =>
-              <Card>
-                <Card.Img variant="top" src={item.image} />
-                <Card.Body>
-                  <Card.Title>{item.name}</Card.Title>
-                  <Truncate name={item.description}/>
-                </Card.Body>
-                <Card.Footer>
-                  <big className="text-muted">Price: {item.price}</big>
-                  <Button href={"/property/" + item._id} variant="info">More Info</Button>
-                </Card.Footer>
-              </Card>
-            )}
+                <div class="row">
+                    {data.map(item =>
+                      <div class="col-sm-3">
+                      <Card className="mb-3">
+                        <Card.Img variant="top" src={item.image} />
+                        <Card.Body>
+                          <Card.Title>{item.name}</Card.Title>
+                          <Truncate name={item.description}/>
+                        </Card.Body>
+                        <Card.Footer>
+                          <big className="text-muted">Price: {item.price}</big>
+                          <Button href={"/property/" + item._id} variant="info">More Info</Button>
+                        </Card.Footer>
+                      </Card>
+                      </div>
+                    )}
+                </div>
             </CardDeck>
         </div>
     );
