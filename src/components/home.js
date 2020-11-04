@@ -30,12 +30,14 @@ const Home = () => {
         async function fetchData() {
             // send HTTP request
             const result = await getProperties();
+            
+            console.log(result)
             // save response to variable
             setData(result);
-        }   
+        }          
         
         //call the function
-        fetchData();    
+        fetchData(); 
     }, []);    
     
     return(
@@ -45,9 +47,9 @@ const Home = () => {
                 <Button href="/property/new" variant="info">Sell Now!</Button>                
             </div>
             <CardDeck>
-                <div class="row">
+                <div className="row">
                     {data.map(item =>
-                      <div class="col-sm-3">
+                      <div className="col-sm-4">
                       <Card className="mb-3">
                         <Card.Img variant="top" src={item.image} />
                         <Card.Body>
@@ -71,9 +73,9 @@ const Home = () => {
  * The function will fetch all properties from the RESTApi
  *
  * @name Get the all properties
- * @returns {Object} all properties saved in the DB
+ * @returns {Object} all active properties saved in the DB
  */
-async function getProperties() {
+async function getProperties(setPreviewImg) {
     //get the username and password from env variables
     const username = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
@@ -90,8 +92,20 @@ async function getProperties() {
         //using node fetch to get the data from the API
         const getData = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
             .then(res => res.json())
-            .then((json) => json);
-
+            .then((json) => json);        
+               
+        //loop inside the object full of properties
+        Object.keys(getData).forEach((prop) => {                            
+            // `prop` is the property name
+            // `getData[prop]` is the property value
+            
+            //if image exists
+            if(getData[prop].image) {
+                //prepare the image for read as base64 string
+                getData[prop].image = ("data:image/png;base64," + getData[prop].image[0].img);
+            }                      
+        });        
+        
         //return the data fetched from the API endpoint
         return getData;
     } catch(err) {
