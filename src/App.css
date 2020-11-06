@@ -35,7 +35,15 @@ form {
 
 .card {
     margin: auto auto 5em auto;
-    min-height: 324px;
+}
+
+.homeCard {
+    min-height: 509px;
+    max-height: 509px;
+}
+
+.singleCard {
+    max-width: 60%;
 }
 
 .container { 
@@ -54,3 +62,11 @@ form {
 .round {
     border-radius: inherit;
 }
+
+.row {
+    margin-bottom: 5em;
+}
+
+.list-group{
+     flex-direction: row;
+ }

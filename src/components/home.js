@@ -50,7 +50,7 @@ const Home = () => {
                 <div className="row">
                     {data.map(item =>
                       <div className="col-sm-4">
-                      <Card className="mb-3">
+                      <Card className="mb-3 homeCard">
                         <Card.Img variant="top" src={item.image} />
                         <Card.Body>
                           <Card.Title>{item.name}</Card.Title>

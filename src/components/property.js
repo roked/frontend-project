@@ -15,6 +15,8 @@ import base64        from 'base-64';
 const Property = (props) => {
     //using react hook function useState to controll the state
     const [data, setData] = useState([]);
+    //list of features will be stored here
+    let listFeatures;
     
     //get the property id from the params using react hook
     const { id } = useParams();
@@ -28,17 +30,23 @@ const Property = (props) => {
             // save response to variable
             setData(result);
         }   
-        
+                
         //call the function
         fetchData();    
     }, [id]);    
     
-                console.log(typeof(data))
+    //get each property from the data
+    //and create a list
+    if(data.features){
+        listFeatures = data.features.map((feature) =>
+            <ListGroupItem>{feature}</ListGroupItem>
+        );
+    }   
     
     return(
         <div className="container">
             <h1 className="pageTitle">We hope you like it!</h1>
-                <Card>
+                <Card className="singleCard">
                   <Card.Img variant="top" src={data.image} />
                   <Card.Body>
                     <Card.Title id="cardTitle">{data.name}</Card.Title>
@@ -49,7 +57,7 @@ const Property = (props) => {
                     <ListGroupItem>Description: {data.description}</ListGroupItem>
                     <ListGroupItem>Features: 
                         <ListGroup className="list-group-flush">
-                                <ListGroupItem>* Default</ListGroupItem>
+                            {listFeatures}
                         </ListGroup>
                     </ListGroupItem>
                     <ListGroupItem>Location: {data.location}</ListGroupItem>
@@ -65,16 +73,19 @@ const Property = (props) => {
 }
 
 /**
- * The function will fetch all properties from the RESTApi
+ * The function will fetch a specific property from the RESTApi
  *
- * @name Get the all properties
+ * @name Get a proeprty
  * @param {Integer} id - the id of the property
- * @returns {Object} all properties saved in the DB
+ * @returns {Object} the property saved under the provided ID
  */
 async function getProperty(id) {
     //get the username and password from env variables
     const username = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
+    
+    //all available features
+    const allFeatures = ['Beautiful garden', 'Barbeque', 'Pool', 'Balcony', 'Gym'];
     
     //set new header in order to add the credentials
     let headers = new Headers();
@@ -89,6 +100,24 @@ async function getProperty(id) {
         const getData = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
             .then(res => res.json())
             .then((json) => json);
+        //if image exists
+        if(getData.image) {
+            //prepare the image for read as base64 string
+            getData.image = ("data:image/png;base64," + getData.image[0].img);
+        }                            
+        
+        //current features 
+        let features = []
+        
+        //check which feature is true
+        //add it to an array
+        for(let i=0; i<allFeatures.length; i++) {
+            if(getData.features[i]){
+                features.push(allFeatures[i]);
+            }
+        }
+        
+        getData.features = features;
 
         //return the data fetched from the API endpoint
         return getData;
