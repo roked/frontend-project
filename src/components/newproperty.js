@@ -237,16 +237,12 @@ async function createProperty(images, property) {
     
     //auth credentials to access the backend API
     headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password), 'Accept', 'application/json');
-//     //set the content type to form-data
-//     headers.append('Content-Type', 'multipart/form-data');
     
     try{
         const settings = { method: 'post', body: data, withCredentials: true, credentials: 'include', headers: headers };
 
-        console.log(settings);
-        
         //using node fetch to post the data to the API endpoint
-        const sendData = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/new`, settings)
+        await fetch(`https://program-nissan-3000.codio-box.uk/api/property/new`, settings)
             .then(res => res.json())
             .then(json => console.log(json));
         
