@@ -22,6 +22,9 @@ export default function App() {
         <Router>
             <NavbarL />
             <Switch>
+                <Route path="/property/delete">
+                    <Home />
+                </Route>
                 <Route path="/property/edit">
                     <EditProperty />
                 </Route>
