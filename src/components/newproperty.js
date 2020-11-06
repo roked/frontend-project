@@ -1,12 +1,13 @@
 import React, { 
     useState,
     useEffect
-}             from 'react';
-import Form   from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import Col    from 'react-bootstrap/Col';
-import fetch  from 'node-fetch';
-import base64 from 'base-64';
+}                     from 'react';
+import Form           from 'react-bootstrap/Form';
+import Button         from 'react-bootstrap/Button';
+import Col            from 'react-bootstrap/Col';
+import fetch          from 'node-fetch';
+import base64         from 'base-64';
+import { withRouter } from "react-router";
 
 //define the new proprty page function component
 const NewProperty = (props) => {   
@@ -45,17 +46,17 @@ const NewProperty = (props) => {
       //send the property to the backend
       async function postData(images, data) {
           try{
-              // send HTTP request
+              //send HTTP request
               await createProperty(images, data);   
-              window.location.reload(false);
+              //redirect to home page
+              props.history.push('/');
           } catch (err) {
-              console.log(err)
+              console.log(err);
           }
       }   
         
       //call postData
-      postData(images, data);
-        
+      postData(images, data);     
     };   
     
     //lifecycle method
@@ -257,4 +258,4 @@ async function createProperty(images, property) {
     }
 }
 
-export default NewProperty;
+export default withRouter(NewProperty);

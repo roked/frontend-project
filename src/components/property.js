@@ -1,14 +1,15 @@
 import React, { 
     useState, 
     useEffect 
-}                    from 'react';
-import Card          from 'react-bootstrap/Card';
-import Button        from 'react-bootstrap/Button';
-import ListGroup     from 'react-bootstrap/ListGroup';
-import ListGroupItem from 'react-bootstrap/ListGroupItem';
-import { useParams } from "react-router-dom";
-import fetch         from 'node-fetch';
-import base64        from 'base-64';
+}                     from 'react';
+import Card           from 'react-bootstrap/Card';
+import Button         from 'react-bootstrap/Button';
+import ListGroup      from 'react-bootstrap/ListGroup';
+import ListGroupItem  from 'react-bootstrap/ListGroupItem';
+import { useParams }  from "react-router-dom";
+import fetch          from 'node-fetch';
+import base64         from 'base-64';
+import { withRouter } from "react-router";
 
 //define the property page function component
 //add card which will hold the information
@@ -43,6 +44,26 @@ const Property = (props) => {
         );
     }   
     
+    //handleSubmit hook is called whenever the delete button is clicked
+    const handleClick = (e) => {
+        e.preventDefault();
+        
+        //delete the property using the api
+        async function deleteData(id) {
+            try{
+                //delete the property
+                await deleteProperty(id);  
+                //redirect to home page
+                props.history.push('/');
+            } catch (err) {
+                console.log(err);
+            }
+        }   
+        
+        //call deleteData
+        deleteData(id);                
+    }
+    
     return(
         <div className="container">
             <h1 className="pageTitle">We hope you like it!</h1>
@@ -65,6 +86,7 @@ const Property = (props) => {
                   <Card.Footer>
                     <big className="text-muted">Price: {data.price}</big>
                     <Button href="/property/edit/" variant="warning">Edit Property</Button>
+                    <Button variant="danger" onClick={handleClick}>Delete</Button>
                     <Button variant="info">Contact Seller</Button>
                   </Card.Footer>
                 </Card>
@@ -126,4 +148,37 @@ async function getProperty(id) {
     }
 }
 
-export default Property;
+/**
+ * The function will delete a specific property using an api endpoint
+ *
+ * @name Delete a proeprty
+ * @param {Integer} id - the id of the property
+ * @returns {Boolean} true if everything is okay
+ */
+async function deleteProperty(id) {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+    
+    //set new header in order to add the credentials
+    let headers = new Headers();
+    
+    //auth credentials to access the backend API
+    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    
+    try{
+        const settings = { method: 'delete' , withCredentials: true, credentials: 'include', headers: headers};
+
+        //using node fetch to delete the selected property
+        const getData = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+            .then(res => res.json())
+            .then((json) => json);                           
+
+        //return the response
+        return getData;
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+export default withRouter(Property);
