@@ -9,9 +9,7 @@ import fetch  from 'node-fetch';
 import base64 from 'base-64';
 
 //define the new proprty page function component
-const NewProperty = () => {
-    const [validated, setValidated] = useState(false);
-    
+const NewProperty = (props) => {   
     //set variables which state will be checked 
     const [title, setTitle] = useState("");
     const [price, setPrice] = useState("");
@@ -19,7 +17,7 @@ const NewProperty = () => {
     const [status, setStatus] = useState("");
     const [location, setLocation] = useState("");
     const [images, setImages] = useState();
-    const [features, setFeatures] = useState([]);
+    const [features, setFeatures] = useState();
     const [description, setDescription] = useState([""]);
     
     //set features variables which state will be checked  
@@ -30,13 +28,9 @@ const NewProperty = () => {
     const [gym, setGym] = useState();    
     
     //handleSubmit hook is called whenever the form is submited
-    const handleSubmit = (event) => {
-      const form = event.currentTarget;
-      if (form.checkValidity() === false) {
-        event.preventDefault();
-        event.stopPropagation();
-      }       
-        
+    const handleSubmit = (e) => {   
+      e.preventDefault();
+       
       //store the property info in a object
       const data = {
           name: title,
@@ -46,25 +40,28 @@ const NewProperty = () => {
           status: status,
           features: features,
           description: description
-      }  
+      }       
       
       //send the property to the backend
       async function postData(images, data) {
-          // send HTTP request
-          const response = await createProperty(images, data);
-          console.log(response)
+          try{
+              // send HTTP request
+              await createProperty(images, data);   
+              window.location.reload(false);
+          } catch (err) {
+              console.log(err)
+          }
       }   
         
-      //call the function
-      postData(images, data);    
+      //call postData
+      postData(images, data);
         
-      setValidated(true);
     };   
     
     //lifecycle method
     //useEffect is called immediately after the component is mounted to the DOM
     //it will be called each time one of the faetures state chenges
-    useEffect(() => {             
+    useEffect(() => {    
        //store all features in an object    
        const feat = {
          garden: garden,
@@ -80,7 +77,7 @@ const NewProperty = () => {
     return(
         <div className="container">
             <h1 className="pageTitle">Let's gather some information. Please complete the form!</h1>            
-            <Form noValidate validated={validated} onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit}>
                   <Form.Row>
                     <Form.Group as={Col} md="3" controlId="validationTitle">
                       <Form.Label>Title</Form.Label>
@@ -223,14 +220,14 @@ async function createProperty(images, property) {
     const username = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
     
-    console.log(images)
-    
     //create new form data which will be sent to the backend
     const data = new FormData();
-    for(let i=0; i<images.length; i++) {
-       data.append('file', images[i])
+    if(images){
+        for(let i=0; i<images.length; i++) {
+           data.append('file', images[i])
+        }        
     }
-    
+ 
     //place each value from the property object as part of the formData
     Object.keys(property).forEach(key => data.append(key, property[key]));
     
