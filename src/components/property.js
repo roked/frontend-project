@@ -13,7 +13,15 @@ import { withRouter } from "react-router";
 
 //define the property page function component
 //add card which will hold the information
-const Property = (props) => {
+const Property = (props) => { 
+    //get the user from the props state
+    let user;
+    if(props.location.state){
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    
     //using react hook function useState to controll the state
     const [data, setData] = useState([]);
     //list of features will be stored here
@@ -54,7 +62,10 @@ const Property = (props) => {
                 //delete the property
                 await deleteProperty(id);  
                 //redirect to home page
-                props.history.push('/');
+                props.history.push({
+                    pathname:'/', 
+                    state: { user: user }
+                });
             } catch (err) {
                 console.log(err);
             }
@@ -62,6 +73,28 @@ const Property = (props) => {
         
         //call deleteData
         deleteData(id);                
+    }
+    
+    //available buttons
+    //depends of the user (property owner or not)
+    let buttons;
+    if(data.author && user){
+        if(data.author.id === user._id)
+            {
+                buttons = <div>
+                            <Button className="mx-1" href="/property/edit/" variant="warning">Edit Property</Button>
+                            <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>                          
+                          </div>   
+            }
+        else {
+                buttons = <div>
+                              <Button className="mx-1" variant="info">Contact Seller</Button>                        
+                          </div>              
+        }
+    } else {
+        buttons = <div>
+                      <Button className="mx-1" variant="info">Contact Seller</Button>                        
+                  </div>          
     }
     
     return(
@@ -85,9 +118,7 @@ const Property = (props) => {
                     </ListGroup>    
                   <Card.Footer>
                     <big className="text-muted">Price: {data.price}</big>
-                    <Button href="/property/edit/" variant="warning">Edit Property</Button>
-                    <Button variant="danger" onClick={handleClick}>Delete</Button>
-                    <Button variant="info">Contact Seller</Button>
+                    {buttons}    
                   </Card.Footer>
                 </Card>
         </div>

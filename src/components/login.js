@@ -11,14 +11,12 @@ const Login = (props) => {
     const [password, setPassword] = useState("");
 
     const handleSubmit = (e) => {
-        e.preventDefault();
-        
+        e.preventDefault();       
         //create user object
         const userData = {
             email: email,
             password: password
-        }
-        
+        }      
         //send the user object
         async function postUser(userData) {
             try{
@@ -34,11 +32,9 @@ const Login = (props) => {
             } catch (err) {
                 console.log(err);
             }
-        }   
-        
+        }         
         //call postData
-        postUser(userData);      
-       
+        postUser(userData);       
     };
     
     return(

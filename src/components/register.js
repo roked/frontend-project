@@ -14,7 +14,7 @@ const Register = (props) => {
     const [password, setPassword] = useState("");
     const [signUpCode, setCode] = useState("");
     
-    //this function checks the input validity on submit
+    //this executes when the form is submited
     const handleSubmit = (e) => {        
         e.preventDefault();      
         //create user object
