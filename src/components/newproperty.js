@@ -11,6 +11,16 @@ import { withRouter } from "react-router";
 
 //define the new proprty page function component
 const NewProperty = (props) => {   
+    //get the user from the props state
+    let user;
+    if(props.location.state){
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    //check for user (if loged in)
+    const [isLoggedIn , setUser] = useState(user ? true : false);    
+    
     //set variables which state will be checked 
     const [title, setTitle] = useState("");
     const [price, setPrice] = useState("");
@@ -28,7 +38,7 @@ const NewProperty = (props) => {
     const [barbeque, setBarb] = useState();
     const [gym, setGym] = useState();    
     
-    //handleSubmit hook is called whenever the form is submited
+    //handleSubmit is called whenever the form is submited
     const handleSubmit = (e) => {   
       e.preventDefault();
        
@@ -49,7 +59,10 @@ const NewProperty = (props) => {
               //send HTTP request
               await createProperty(images, data);   
               //redirect to home page
-              props.history.push('/');
+              props.history.push({
+                 pathname:'/', 
+                 state: { user: user }
+              });
           } catch (err) {
               console.log(err);
           }

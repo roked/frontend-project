@@ -19,9 +19,14 @@ import base64    from 'base-64';
  */
 const Home = (props) => {
     //get the user from the props state
-    const { user } = props.location.state;
+    let user;
+    if(props.location.state){
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
     //check for user (if loged in)
-    const [isLoggedIn , setUser] = useState(user ? true : false);     
+    const [isLoggedIn , setUser] = useState(user ? true : false);    
     //using react hook function useState to controll the state
     const [data, setData] = useState([]);
     //truncate the description
@@ -45,10 +50,36 @@ const Home = (props) => {
         fetchData(); 
     }, []);    
     
+    //visitProperty is called whenever a property is selected
+    const visitProperty = (propertyId) => {  
+        try{
+             //redirect to property
+             props.history.push({
+                 pathname:'/property/' + propertyId, 
+                 state: { user: user }
+             });
+         } catch (err) {
+             console.log(err);
+         }   
+    };  
+    
+    //create new property route 
+    const createNewProperty = () => {  
+        try{
+             //redirect to property
+             props.history.push({
+                 pathname:'/property/new', 
+                 state: { user: user }
+             });
+         } catch (err) {
+             console.log(err);
+         }   
+    };  
+    
     //set the sell button
     let sellButton;
     if(isLoggedIn){
-        sellButton = <Button href="/property/new" variant="info">Sell Now!</Button>    
+        sellButton = <Button onClick={()=> createNewProperty()} variant="info">Sell Now!</Button>    
     }
     
     return(
@@ -69,7 +100,7 @@ const Home = (props) => {
                         </Card.Body>
                         <Card.Footer>
                           <big className="text-muted">Price: {item.price}</big>
-                          <Button href={"/property/" + item._id} variant="info">More Info</Button>
+                          <Button onClick={()=> visitProperty(item._id)} variant="info">More Info</Button>
                         </Card.Footer>
                       </Card>
                       </div>
