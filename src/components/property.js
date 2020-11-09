@@ -78,20 +78,25 @@ const Property = (props) => {
     //available buttons
     //depends of the user (property owner or not)
     let buttons;
+    //h1 text
+    let h1Text;
     if(data.author && user){
         if(data.author.id === user._id)
             {
+                h1Text = <h1 className="pageTitle">Hey {user.username}! How are you today?</h1>
                 buttons = <div>
                             <Button className="mx-1" href="/property/edit/" variant="warning">Edit Property</Button>
                             <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>                          
                           </div>   
             }
         else {
+                h1Text = <h1 className="pageTitle">We hope you like it!</h1>
                 buttons = <div>
-                              <Button className="mx-1" variant="info">Contact Seller</Button>                        
+                              <Button className="mx-1" variant="info">Contact Seller</Button>                       
                           </div>              
         }
     } else {
+        h1Text = <h1 className="pageTitle">We hope you like it!</h1>
         buttons = <div>
                       <Button className="mx-1" variant="info">Contact Seller</Button>                        
                   </div>          
@@ -99,7 +104,7 @@ const Property = (props) => {
     
     return(
         <div className="container">
-            <h1 className="pageTitle">We hope you like it!</h1>
+            {h1Text}
                 <Card className="singleCard">
                   <Card.Img variant="top" src={data.image} />
                   <Card.Body>
