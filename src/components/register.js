@@ -3,7 +3,7 @@ import Form               from 'react-bootstrap/Form';
 import Button             from 'react-bootstrap/Button';
 import fetch              from 'node-fetch';
 import base64             from 'base-64';
-import { withRouter }     from "react-router";
+import { withRouter }     from 'react-router';
 
 //define the login page function component
 //TODO - add password check
@@ -29,8 +29,8 @@ const Register = (props) => {
         async function postUser(user) {
             try{
                 //send HTTP request
-                await createProperty(user);   
-                //redirect to home page
+                await registerUser(user);   
+                //redirect to login page
                 props.history.push('/login');
             } catch (err) {
                 console.log(err);
@@ -142,7 +142,7 @@ const Register = (props) => {
  * @param {Object} user - the user info
  * @returns {Boolean} true - if everything is fine
  */
-async function createProperty(user) {
+async function registerUser(user) {
     //get the username and password from env variables
     const username = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
@@ -158,8 +158,6 @@ async function createProperty(user) {
     
     try{
         const settings = { method: 'post', body: JSON.stringify(user), withCredentials: true, credentials: 'include', headers: headers };
-
-        console.log(settings);
         
         //using node fetch to post the data to the API endpoint
         await fetch('https://program-nissan-3000.codio-box.uk/api/user/register', settings)
@@ -169,8 +167,8 @@ async function createProperty(user) {
         //return true if everything is fine
         return true;
     } catch(err) {
-        console.log(err);
-        return false;
+        alert("An error has occured while signUp!");
+        throw new Error("An error has occured while signUp!");
     }
 }
 
