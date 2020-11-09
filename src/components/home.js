@@ -1,11 +1,15 @@
 import React, { 
     useState, 
     useEffect }  from 'react';
+import { 
+    withRouter 
+}                from "react-router";
 import Card      from 'react-bootstrap/Card';
 import CardDeck  from 'react-bootstrap/CardDeck';
 import Button    from 'react-bootstrap/Button';
 import fetch     from 'node-fetch';
 import base64    from 'base-64';
+
 
 /**
  * Define the home page function component which show all properties
@@ -13,10 +17,13 @@ import base64    from 'base-64';
  * @name Home page
  * @returns {JSX} the jsx code which represents the home page
  */
-const Home = () => {
+const Home = (props) => {
+    //get the user from the props state
+    const { user } = props.location.state;
+    //check for user (if loged in)
+    const [isLoggedIn , setUser] = useState(user ? true : false);     
     //using react hook function useState to controll the state
     const [data, setData] = useState([]);
-    
     //truncate the description
     function Truncate(props){
         //the max lenght of a description
@@ -30,8 +37,6 @@ const Home = () => {
         async function fetchData() {
             // send HTTP request
             const result = await getProperties();
-            
-            console.log(result)
             // save response to variable
             setData(result);
         }          
@@ -40,11 +45,17 @@ const Home = () => {
         fetchData(); 
     }, []);    
     
+    //set the sell button
+    let sellButton;
+    if(isLoggedIn){
+        sellButton = <Button href="/property/new" variant="info">Sell Now!</Button>    
+    }
+    
     return(
         <div className="container">
             <div className="my-2">
                 <h1 className="pageTitle">Our active listings!</h1>
-                <Button href="/property/new" variant="info">Sell Now!</Button>                
+                {sellButton}   
             </div>
             <CardDeck>
                 <div className="row">
@@ -104,13 +115,14 @@ async function getProperties(setPreviewImg) {
                 //prepare the image for read as base64 string
                 getData[prop].image = ("data:image/png;base64," + getData[prop].image[0].img);
             }                      
-        });        
+        });                
         
         //return the data fetched from the API endpoint
         return getData;
     } catch(err) {
-        console.log(err);
+        alert("An error has occured while showAll!");
+        throw new Error("An error has occured while showAll!");
     }
 }
 
-export default Home;
+export default withRouter(Home);

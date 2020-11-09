@@ -144,7 +144,8 @@ async function getProperty(id) {
         //return the data fetched from the API endpoint
         return getData;
     } catch(err) {
-        console.log(err);
+        alert("An error has occured while getData!");
+        throw new Error("An error has occured while getData!");
     }
 }
 
@@ -177,7 +178,8 @@ async function deleteProperty(id) {
         //return the response
         return getData;
     } catch(err) {
-        console.log(err);
+         alert("An error has occured while delete!");
+        throw new Error("An error has occured while delete!");
     }
 }
 

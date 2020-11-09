@@ -249,8 +249,8 @@ async function createProperty(images, property) {
         //return true if everything is fine
         return true;
     } catch(err) {
-        console.log(err);
-        return false;
+        alert("An error has occured while createProperty!");
+        throw new Error("An error has occured while createProperty!");
     }
 }
 
