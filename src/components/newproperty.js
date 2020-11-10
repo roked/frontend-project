@@ -29,7 +29,7 @@ const NewProperty = (props) => {
     const [location, setLocation] = useState("");
     const [images, setImages] = useState();
     const [features, setFeatures] = useState();
-    const [description, setDescription] = useState([""]);
+    const [description, setDescription] = useState("");
     
     //set features variables which state will be checked  
     const [garden, setGarden] = useState();
@@ -226,8 +226,8 @@ const NewProperty = (props) => {
  * The function will send the new property to the RESTApi
  *
  * @name Create new property
+ * @param {Buffer} images - the image of the property
  * @param {Object} property - the property info
- * @returns {Boolean} true - if everything is fine
  */
 async function createProperty(images, property) {
     //get the username and password from env variables
@@ -256,11 +256,18 @@ async function createProperty(images, property) {
 
         //using node fetch to post the data to the API endpoint
         await fetch(`https://program-nissan-3000.codio-box.uk/api/property/new`, settings)
-            .then(res => res.json())
-            .then(json => console.log(json));
-        
-        //return true if everything is fine
-        return true;
+            .then(res => {                
+                //return true if everything is fine     
+                if(res.status === 200) {
+                    //get a json promise from the respond
+                    return res.json();
+                } else {
+                    //if the user does not exist 
+                    //or
+                    //wrong credentials
+                    throw new Error("Fail.");                 
+                }    
+            }).then(json => json); //get the loged user data
     } catch(err) {
         alert("An error has occured while createProperty!");
         throw new Error("An error has occured while createProperty!");

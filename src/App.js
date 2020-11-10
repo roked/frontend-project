@@ -25,7 +25,7 @@ export default function App() {
                 <Route path="/property/delete">
                     <Home />
                 </Route>
-                <Route path="/property/edit">
+                <Route path="/property/:id/edit">
                     <EditProperty />
                 </Route>
                 <Route path="/property/new">

@@ -52,7 +52,7 @@ const Property = (props) => {
         );
     }   
     
-    //handleSubmit hook is called whenever the delete button is clicked
+    //handleSubmit is called whenever the delete button is clicked
     const handleClick = (e) => {
         e.preventDefault();
         
@@ -75,6 +75,19 @@ const Property = (props) => {
         deleteData(id);                
     }
     
+    //editProperty is called whenever edit button is clicked
+    const editProperty = (propertyId) => {  
+        try{
+             //redirect to property
+             props.history.push({
+                 pathname:'/property/' + propertyId.id + '/edit', 
+                 state: { user: user }
+             });
+         } catch (err) {
+             console.log(err);
+         }   
+    };  
+    
     //available buttons
     //depends of the user (property owner or not)
     let buttons;
@@ -85,7 +98,7 @@ const Property = (props) => {
             {
                 h1Text = <h1 className="pageTitle">Hey {user.username}! How are you today?</h1>
                 buttons = <div>
-                            <Button className="mx-1" href="/property/edit/" variant="warning">Edit Property</Button>
+                            <Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property</Button>
                             <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>                          
                           </div>   
             }
