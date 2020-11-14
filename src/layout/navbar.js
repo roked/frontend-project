@@ -1,6 +1,7 @@
 import React, { 
     useState,
-    useEffect
+    useEffect,
+    useRef
 }             from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav    from 'react-bootstrap/Nav';
@@ -15,6 +16,8 @@ import {
 const NavbarL = (props) => {
     //get the user from the props state
     let user;
+    //set the available buttons
+    let userButtons;
     if(props.location.state){
         user = props.location.state.user;
     } else {
@@ -22,6 +25,7 @@ const NavbarL = (props) => {
     }
     //check for user (if loged in)
     const [isLoggedIn , setUser] = useState(user ? true : false);  
+    const isInitialMount = useRef(true);
     
      //this function runs when the user click sign out
     const handleSignOut = (e) => {   
@@ -32,28 +36,32 @@ const NavbarL = (props) => {
         async function singOutUser() {
             try{
                 //send HTTP request
-                await signOut();                 
-                setUser(false)
-                
-                //redirect to home page
-                //pass the loged user
-                props.history.push({
-                  pathname: '/login',                  
-                  state: { user: isLoggedIn }
-                });
+                await signOut(); 
             } catch (err) {
                 console.log(err);
             }
         }   
         
         //call postData
-        singOutUser();           
+        singOutUser();   
         
+        setUser(false)
+
+        //redirect to home page
+        //pass the loged user
+        props.history.push({
+          pathname: '/login',                  
+          state: { user: isLoggedIn }
+        });     
     }
     
-    useEffect(()=> {
-        setUser(user);
-    },[user]);
+    useEffect(() => {
+      if (isInitialMount.current) {
+         isInitialMount.current = false;
+      } else {
+          setUser(user);
+      }
+    }, [user]);
     
     //go back to home
     const goHome = () => {  
@@ -81,8 +89,6 @@ const NavbarL = (props) => {
          }   
     };  
     
-    //set the available buttons
-    let userButtons;
     if(isLoggedIn){
         userButtons = <Nav className="ml-auto">
                           <Nav.Link href="/">Profile</Nav.Link>
