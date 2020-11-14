@@ -1,14 +1,16 @@
 import React, { 
     useState, 
-    useEffect }  from 'react';
+    useEffect }    from 'react';
 import { 
     withRouter 
-}                from "react-router";
-import Card      from 'react-bootstrap/Card';
-import CardDeck  from 'react-bootstrap/CardDeck';
-import Button    from 'react-bootstrap/Button';
-import fetch     from 'node-fetch';
-import base64    from 'base-64';
+}                  from "react-router";
+import Card        from 'react-bootstrap/Card';
+import CardDeck    from 'react-bootstrap/CardDeck';
+import Button      from 'react-bootstrap/Button';
+import Form        from 'react-bootstrap/Form';
+import FormControl from 'react-bootstrap/FormControl';
+import fetch       from 'node-fetch';
+import base64      from 'base-64';
 
 
 /**
@@ -87,7 +89,7 @@ const Home = (props) => {
             <div className="my-2">
                 <h1 className="pageTitle">Our active listings!</h1>
                 {sellButton}   
-            </div>
+            </div>  
             <CardDeck>
                 <div className="row">
                     {data.map(item =>

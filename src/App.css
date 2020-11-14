@@ -7,6 +7,13 @@
     margin: 0;
 }
 
+#search {
+    display: -webkit-inline-box;
+    border: none;
+    position: relative;
+    left: 67.3%;
+}
+
 h1 {
     text-align: center;
     margin: 0.5px 3px;
