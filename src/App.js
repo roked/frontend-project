@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 
 //import all pages at once
-import { Home, Login, About, Register, Property, NewProperty, EditProperty } from './components'
+import { Home, Login, About, Register, Property, NewProperty, EditProperty, Profile} from './components'
 //import the layout component
 import { NavbarL, Footer } from './layout';
 //import css style
@@ -22,6 +22,9 @@ export default function App() {
         <Router>
             <NavbarL />
             <Switch>
+                <Route path="/property/profile">
+                    <Profile />
+                </Route>
                 <Route path="/property/delete">
                     <Home />
                 </Route>

@@ -230,7 +230,7 @@ const EditProperty = (props) => {
                          name="description" 
                          defaultValue={data.description}
                          onChange={e => setDescription(e.target.value)}
-                         type="texta" 
+                         type="textarea" 
                          placeholder="This property has..." 
                          required />
                      <Form.Control.Feedback type="invalid">
