@@ -106,7 +106,10 @@ const Property = (props) => {
                 msg: msg        
             }
             //HTTP request 
-            await sendMessage(msgToSend);
+            const respond = await sendMessage(msgToSend);
+            if(respond){
+                window.location.reload(false);
+            }
         }
         
         sendMsg(msg, reciever);

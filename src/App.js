@@ -22,9 +22,6 @@ export default function App() {
         <Router>
             <NavbarL />
             <Switch>
-                <Route path="/property/profile">
-                    <Profile />
-                </Route>
                 <Route path="/property/delete">
                     <Home />
                 </Route>
@@ -36,6 +33,9 @@ export default function App() {
                 </Route>
                 <Route path="/property/:id">
                     <Property />
+                </Route>
+                <Route path="/profile">
+                    <Profile />
                 </Route>
                 <Route path="/register">
                     <Register />

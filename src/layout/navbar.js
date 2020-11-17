@@ -52,7 +52,7 @@ const NavbarL = (props) => {
         //pass the loged user
         props.history.push({
           pathname: '/login',                  
-          state: { user: isLoggedIn }
+          state: { user: false }
         });     
     }
     
@@ -91,9 +91,22 @@ const NavbarL = (props) => {
          }   
     };  
     
+    //go back to about page
+    const goProfile = () => {  
+        try{
+             //redirect to about
+             props.history.push({
+                 pathname:'/profile', 
+                 state: { user: user }
+             });
+         } catch (err) {
+             console.log(err);
+         }   
+    };  
+    
     if(isLoggedIn){
         userButtons = <Nav className="ml-auto">
-                          <Nav.Link href="/property/profile">Profile</Nav.Link>
+                          <Nav.Link onClick={()=> goProfile()}>Profile</Nav.Link>
                           <Nav.Link onClick={handleSignOut}>Sign Out</Nav.Link>                
                       </Nav> 
     } else {

@@ -29,7 +29,7 @@ const Home = (props) => {
     }
     //check for user (if loged in)
     const [isLoggedIn , setUser] = useState(user ? true : false);    
-    //using react hook function useState to controll the state
+    //store the state of the properties data
     const [data, setData] = useState([]);
     //truncate the description
     function Truncate(props){
@@ -117,9 +117,9 @@ const Home = (props) => {
  * The function will fetch all properties from the RESTApi
  *
  * @name Get the all properties
- * @returns {Object} all active properties saved in the DB
+ * @returns {Object} all properties saved in the DB
  */
-async function getProperties(setPreviewImg) {
+async function getProperties() {
     //get the username and password from env variables
     const username = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
@@ -131,7 +131,7 @@ async function getProperties(setPreviewImg) {
     headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
     
     try{
-        const settings = { method: 'Get' , withCredentials: true, credentials: 'include', headers: headers};
+        const settings = { method: 'post', withCredentials: true, credentials: 'include', headers: headers};
 
         //using node fetch to get the data from the API
         const getData = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
