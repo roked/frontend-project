@@ -25,6 +25,7 @@ const NavbarL = (props) => {
     }
     //check for user (if loged in)
     const [isLoggedIn , setUser] = useState(user ? true : false);  
+    //useRef to keep track of initialMount
     const isInitialMount = useRef(true);
     
      //this function runs when the user click sign out
@@ -55,6 +56,7 @@ const NavbarL = (props) => {
         });     
     }
     
+    //useEffect will run only on updates except initial mount
     useEffect(() => {
       if (isInitialMount.current) {
          isInitialMount.current = false;
@@ -91,7 +93,7 @@ const NavbarL = (props) => {
     
     if(isLoggedIn){
         userButtons = <Nav className="ml-auto">
-                          <Nav.Link href="/">Profile</Nav.Link>
+                          <Nav.Link href="/property/profile">Profile</Nav.Link>
                           <Nav.Link onClick={handleSignOut}>Sign Out</Nav.Link>                
                       </Nav> 
     } else {

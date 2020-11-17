@@ -6,6 +6,8 @@ import Card           from 'react-bootstrap/Card';
 import Button         from 'react-bootstrap/Button';
 import ListGroup      from 'react-bootstrap/ListGroup';
 import ListGroupItem  from 'react-bootstrap/ListGroupItem';
+import Accordion      from 'react-bootstrap/Accordion'
+import Form           from 'react-bootstrap/Form';
 import { useParams }  from "react-router-dom";
 import fetch          from 'node-fetch';
 import base64         from 'base-64';
@@ -22,8 +24,11 @@ const Property = (props) => {
         user = false;
     }
     
-    //using react hook function useState to controll the state
+    //using react hook function useState 
+    //to keep the state of the data
     const [data, setData] = useState([]);
+    //keep the state of the msg
+    const [msg, setMsg] = useState("");
     //list of features will be stored here
     let listFeatures;
     
@@ -88,6 +93,25 @@ const Property = (props) => {
          }   
     };  
     
+    //handleSubmit is called whenever user sends messages
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        //get the owner of the property       
+        const reciever = data.author.username;
+        //send a message
+        async function sendMsg(msg, reciever) {
+            //create an object to store information
+            const msgToSend = {
+                receiver: reciever,
+                msg: msg        
+            }
+            //HTTP request 
+            await sendMessage(msgToSend);
+        }
+        
+        sendMsg(msg, reciever);
+    };      
+    
     //available buttons
     //depends of the user (property owner or not)
     let buttons;
@@ -104,15 +128,56 @@ const Property = (props) => {
             }
         else {
                 h1Text = <h1 className="pageTitle">We hope you like it!</h1>
-                buttons = <div>
-                              <Button className="mx-1" variant="info">Contact Seller</Button>                       
-                          </div>              
+                buttons =     <Accordion defaultActiveKey="0">
+                                  <Card>
+                                    <Card.Header>
+                                      <Accordion.Toggle as={Button} variant="info" eventKey="1">
+                                        Contact Seller
+                                      </Accordion.Toggle>
+                                    </Card.Header>
+                                    <Accordion.Collapse eventKey="1">
+                                      <Form onSubmit={handleSubmit}>
+                                          <Form.Control
+                                                name="msg"
+                                                onChange={e => setMsg(e.target.value)}
+                                                required
+                                                type="text"
+                                                as="textarea" 
+                                                rows="3"
+                                                placeholder="You have a nice..."
+                                              />
+                                           <Button type="submit" variant="success">Send</Button>
+                                      </Form>
+                                    </Accordion.Collapse>
+                                  </Card>                     
+                              </Accordion>                        
+                                       
         }
     } else {
         h1Text = <h1 className="pageTitle">We hope you like it!</h1>
-        buttons = <div>
-                      <Button className="mx-1" variant="info">Contact Seller</Button>                        
-                  </div>          
+        buttons =    <Accordion defaultActiveKey="0">
+                          <Card>
+                            <Card.Header>
+                              <Accordion.Toggle as={Button} variant="info" eventKey="1">
+                                Contact Seller
+                              </Accordion.Toggle>
+                            </Card.Header>
+                            <Accordion.Collapse eventKey="1">
+                                <Form onSubmit={handleSubmit}>
+                                    <Form.Control
+                                          name="msg"
+                                          onChange={e => setMsg(e.target.value)}
+                                          required
+                                          type="text"
+                                          as="textarea" 
+                                          rows="3"
+                                          placeholder="You have a nice..."
+                                        />
+                                     <Button type="submit" variant="success">Send</Button>
+                                </Form>
+                            </Accordion.Collapse>
+                          </Card>                     
+                      </Accordion>                                 
     }
     
     return(
@@ -211,10 +276,9 @@ async function deleteProperty(id) {
     const password = process.env.REACT_APP_PASSWORD;
     
     //set new header in order to add the credentials
-    let headers = new Headers();
-    
+    let headers = new Headers();  
     //auth credentials to access the backend API
-    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password)); 
     
     try{
         const settings = { method: 'delete' , withCredentials: true, credentials: 'include', headers: headers};
@@ -229,6 +293,49 @@ async function deleteProperty(id) {
     } catch(err) {
          alert("An error has occured while delete!");
         throw new Error("An error has occured while delete!");
+    }
+}
+
+/**
+ * The function will send a message to a user
+ *
+ * @name Send a message
+ * @param {Integer} id - the id of the property
+ * @param {Integer} id - the id of the property
+ * @returns {Boolean} true if everything is okay
+ */
+async function sendMessage(msg) {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+           
+    const meta = new Map(); 
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    let headers = new Headers(meta);
+    
+    try{
+        const settings = { method: 'post', body: JSON.stringify(msg), withCredentials: true, credentials: 'include', headers: headers};       
+        
+        //using node fetch to send a message
+        const data = await fetch('https://program-nissan-3000.codio-box.uk/api/message/new', settings)
+            .then(res => {                
+                //return true if everything is fine     
+                if(res.status === 200) {
+                    //get a json promise from the respond
+                    return res.json();
+                } else {
+                    //if message not send
+                    throw new Error("Fail.");                 
+                }    
+            });
+        return true;
+    } catch(err) {
+         alert("An error has occured while sending message!");
+        throw new Error("An error has occured while sending message!");
     }
 }
 

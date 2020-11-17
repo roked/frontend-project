@@ -201,7 +201,7 @@ const NewProperty = (props) => {
                          name="description" 
                          value={description}
                          onChange={e => setDescription(e.target.value)}
-                         type="texta" 
+                         type="textarea"
                          placeholder="This property has..." 
                          required />
                      <Form.Control.Feedback type="invalid">

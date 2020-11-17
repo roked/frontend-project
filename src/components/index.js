@@ -5,6 +5,7 @@ import Register     from './register';
 import Property     from './property';
 import NewProperty  from './newproperty';
 import EditProperty from './editproperty'
+import Profile      from './profile';
 
 //export all pages 
-export { Home, Login, About, Register, Property, NewProperty, EditProperty };
+export { Home, Login, About, Register, Property, NewProperty, EditProperty, Profile };

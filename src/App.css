@@ -14,6 +14,35 @@
     left: 67.3%;
 }
 
+#chatList {
+    min-height: 794px;
+    max-height: 794px;  
+    border-right: 1px solid black;
+}
+
+#chatBox {
+    padding-left: 0;
+    margin-top: 25px;
+    border: 3px solid grey;
+    max-height: 50em;
+    min-height: 50em;
+    border-radius: 10px;
+}
+
+#chatTab {
+    min-height: 794px;
+    max-height: 794px;
+    min-width: 893px;
+    max-width: 893px;
+    position: absolute;
+}
+
+#send_btn {
+    position: absolute;
+    right: 7px;
+    top: 6px;
+}
+
 h1 {
     text-align: center;
     margin: 0.5px 3px;
@@ -24,6 +53,24 @@ form {
     border-radius: 0.7em;
     display: flex;
     flex-direction: column;
+}
+
+img {
+    max-width: 100%;
+}
+
+.input-group {
+    border-radius: 15px;
+}
+
+.chatBlock {
+    display: inline-block;
+}
+
+.rce-container-clist {
+    max-width: 250px;
+    margin-right: 0;
+    border-radius: 10px;
 }
 
 .card-footer {
@@ -77,3 +124,14 @@ form {
 .list-group{
      flex-direction: row;
  }
+
+/*======Message CSS=====*/
+
+.accordion>.card {
+    margin: 0;
+}
+
+.accordion {
+    flex-grow: 1;
+    margin-left: 1em;
+}
