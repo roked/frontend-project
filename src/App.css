@@ -84,6 +84,7 @@ img {
 
 .text-muted {
     align-self: center;
+    font-size: larger;
 }
 
 
@@ -128,6 +129,16 @@ img {
 .list-group{
      flex-direction: row;
  }
+/*======Home CSS========*/
+.filters {
+    padding: 2px;
+    margin: 0 10em;
+    border: 1px solid grey;
+}
+
+.centerCheckbox {
+    padding: 5px 0;
+}
 
 /*======Message CSS=====*/
 
