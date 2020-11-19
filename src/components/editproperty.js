@@ -72,7 +72,7 @@ const EditProperty = (props) => {
         //call the function
         fetchData();    
     }, [id, garden, balcony, pool, barbeque, gym]);    
-    
+       
     //handleSubmit is called whenever the delete button is clicked
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -98,7 +98,7 @@ const EditProperty = (props) => {
                   if(updatedData[key] === "") updatedData[key] = data[key];
               }             
           });          
-
+        
           //send the property to the backend
           async function postData(id, images, data) {
               try{
@@ -195,7 +195,7 @@ const EditProperty = (props) => {
                         <option>--Please Select--</option>
                         <option>New</option>
                         <option>High Priority</option>
-                        <option>Unpublish</option>
+                        <option>Unpublished</option>
                       </Form.Control>
                       <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
                     </Form.Group>
@@ -288,10 +288,9 @@ async function getProperty(id) {
             if(getData.features[i]){
                 features.push(allFeatures[i]);
             }
-        }
-        
+        }      
         getData.features = features;
-
+        
         //return the data fetched from the API endpoint
         return getData;
     } catch(err) {
