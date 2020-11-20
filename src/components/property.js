@@ -293,7 +293,7 @@ async function getProperty(id) {
 }
 
 /**
- * The function will delete a specific property using an api endpoint
+ * The function will delete a specific property
  *
  * @name Delete a property
  * @param {Number} id - the id of the property
