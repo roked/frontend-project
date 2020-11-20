@@ -3,6 +3,7 @@ import {withRouter} from "react-router";
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
+import Form from 'react-bootstrap/Form';
 import ListGroupItem from 'react-bootstrap/ListGroupItem'
 import fetch from 'node-fetch';
 import base64 from 'base-64';
@@ -18,11 +19,23 @@ const Profile = (props) => {
 
     //store the state of the properties data
     const [data, setData] = useState([]);
+    //store the filtered data
+    const [finaldata, setFinalData] = useState([]);
+    //store the properties which will be displayed
+    const [dataFilter, setFilter] = useState([]);  
     //store the state of the message history data
     const [msgData, setMsgData] = useState([]);
     let propertiesList; //variable to store the properties
     let messagesList = []; //array to store a list of massages
 
+    //set features variables which state will be checked 
+    const [features, setFeatures] = useState();
+    const [garden, setGarden] = useState(false);
+    const [balcony, setBalc] = useState(false);
+    const [pool, setPool] = useState(false);
+    const [barbeque, setBarb] = useState(false);
+    const [gym, setGym] = useState(false);  
+    
     //truncate the description
     function Truncate(props) {
         //the max length of a description
@@ -33,6 +46,17 @@ const Profile = (props) => {
     //lifecycle method
     //useEffect is called immediately after the component is mounted to the DOM
     useEffect(() => {
+        //set the filters    
+        const feat = {
+          garden: garden,
+          balcony: balcony,
+          pool: pool,
+          barbeque: barbeque,
+          gym: gym
+        } 
+        //set the features (object.value() return an array)               
+        setFeatures(Object.values(feat));
+        
         async function fetchData(user) {
             //set the user
             const currentUser = {
@@ -46,11 +70,27 @@ const Profile = (props) => {
             //save responses to variables
             setData(result);
             setMsgData(history);
+            //if the filter data is empty
+            if(dataFilter.length === 0) {
+                setFilter(result);
+            }
         }
 
         //call the function
         fetchData(user);
-    }, [user]);
+        
+        //if filters were applied
+        if(finaldata.length !== 0) {
+            //if filters do not match any property
+            if(finaldata[0] === 'string') { 
+                setFilter([]); 
+            } else {
+                //if final data changes
+                setFilter(finaldata);                
+            }
+        }
+        
+    }, [user, garden, balcony, pool, barbeque, gym, finaldata, dataFilter.length]);
 
     //visitProperty is called whenever a property is selected
     const visitProperty = (propertyId) => {
@@ -68,7 +108,7 @@ const Profile = (props) => {
     //get each property from the data
     //and create a list
     if (data) {
-        propertiesList = data.map((item) =>
+        propertiesList = dataFilter.map((item) =>
             <ListGroupItem>
                 <Card id="cardTitle">
                     <Card.Img variant="left" src={item.image}/>
@@ -102,6 +142,35 @@ const Profile = (props) => {
             ))
         });
     }
+                        
+    //apply filters
+    const applyFilters = () => {
+        //if no filters were applied
+        if(features.every((val, index) => !val)) {
+            setFinalData([]) 
+            setFilter(data);
+            return;
+        }
+        //array to store the properties affter filetering
+        const finaldata = [];
+        for(const property of data) {
+            const propertyFeat = property.features;
+            //check which properties match the filter
+            if(Array.isArray(propertyFeat) && Array.isArray(features) &&
+                propertyFeat.length === features.length && propertyFeat.every((val, index) => val === features[index])) {
+                //if match
+                finaldata.push(property);
+            }
+        }
+        //in case no matches are found 
+        if(finaldata.length === 0) {
+            //set the data to be a an array with a string
+            setFinalData(["string"])
+            return;
+        }
+        //set the data with filters
+        setFinalData(finaldata)   
+    };  
 
     return (
         <div className="container">
@@ -110,6 +179,16 @@ const Profile = (props) => {
                 <div className="col-6 verticalLine">
                     <ListGroup className="list-group-flush">
                         <h1>Your currently active listing</h1>
+                            <div className="my-2">
+                                <div className="checkBox">
+                                    <Form.Check className="centerCheckbox" name="garden" label="Beautiful garden" onChange={e => setGarden(e.target.checked)}/>
+                                    <Form.Check className="centerCheckbox" name="barbeque" label="Barbeque" onChange={e => setBalc(e.target.checked)}/>
+                                    <Form.Check className="centerCheckbox" name="pool" label="Pool" onChange={e => setPool(e.target.checked)}/>
+                                    <Form.Check className="centerCheckbox" name="balcony" label="Balcony" onChange={e => setBarb(e.target.checked)}/>
+                                    <Form.Check className="centerCheckbox" name="gym" label="Gym" onChange={e => setGym(e.target.checked)}/> 
+                                    <Button className="round" onClick={() => applyFilters()} variant="success">Filter</Button>
+                                </div>
+                            </div>
                         {propertiesList}
                     </ListGroup>
                 </div>
