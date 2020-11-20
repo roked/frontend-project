@@ -124,6 +124,22 @@ const Profile = (props) => {
             </ListGroupItem>
         );
     }
+    
+    //handleSubmit is called whenever the delete button is clicked
+    const handleClick = (id) => {
+        //delete a message
+        async function deleteData(id) {
+            try {
+                //delete
+                await deleteMessage(id);
+                window.location.reload(false);
+            } catch (err) {
+                console.log(err);
+            }
+        }
+        //call deleteData
+        deleteData(id);
+    }
 
     //get each message from the data
     //create a list group element
@@ -137,6 +153,7 @@ const Profile = (props) => {
                             <Card.Title>Message: {value}</Card.Title>
                             <p>Sender: {item.sender}</p>
                         </Card.Body>
+                        <Button variant="danger" onClick={() => handleClick(item._id)}>Delete</Button>
                     </Card>
                 </ListGroupItem>
             ))
@@ -284,6 +301,37 @@ async function getHistory() {
     } catch (err) {
         alert("An error has occurred while fetching user properties!");
         throw new Error("An error has occurred fetching user properties!");
+    }
+}
+    
+/**
+ * The function will delete a message
+ *
+ * @name Delete a message
+ * @param {Number} id - the id of the message
+ * @returns {Boolean} true if everything is okay
+ */
+async function deleteMessage(id) {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    //set new header in order to add the credentials
+    let headers = new Headers();
+    //auth credentials to access the backend API
+    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+
+    try {
+        const settings = {method: 'delete', withCredentials: true, credentials: 'include', headers: headers};
+
+        //using node fetch to delete the selected message
+        //return the response
+        return await fetch(`https://program-nissan-3000.codio-box.uk/api/message/${id}`, settings)
+            .then(res => res.json())
+            .then((json) => json);
+    } catch (err) {
+        alert("An error has occurred while delete!");
+        throw new Error("An error has occurred while delete!");
     }
 }
 
