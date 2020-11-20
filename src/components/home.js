@@ -136,7 +136,8 @@ const Home = (props) => {
             const propertyFeat = property.features;
             //check which properties match the filter
             if(Array.isArray(propertyFeat) && Array.isArray(features) &&
-                propertyFeat.length === features.length && propertyFeat.every((val, index) => val === features[index])) {
+               propertyFeat.length === features.length && 
+               propertyFeat.every((val, index) => val === features[index])) {
                 //if match
                 finaldata.push(property);
             }

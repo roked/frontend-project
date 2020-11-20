@@ -114,7 +114,7 @@ const EditProperty = (props) => {
               }
           }                     
           //call postData
-          postData(id, images, updatedData);             
+          postData(id, images, updatedData);
     };      
     
     return(
@@ -300,9 +300,10 @@ async function getProperty(id) {
 }
 
 /**
- * The function will update an existing property to the RESTApi
+ * The function will update an existing property
  *
  * @name Update property
+ * @param {Number} id - the id of the property
  * @param {Buffer} images - the image of the property
  * @param {Object} property - the property info
  */

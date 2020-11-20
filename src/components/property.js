@@ -10,6 +10,9 @@ import fetch from 'node-fetch';
 import base64 from 'base-64';
 import {withRouter} from "react-router";
 
+//keep the image for archive
+let archiveImage;
+
 //define the property page function component
 //add card which will hold the information
 const Property = (props) => {
@@ -86,6 +89,28 @@ const Property = (props) => {
             console.log(err);
         }
     };
+    
+    //editProperty is called whenever edit button is clicked
+    const archieveProperty = (propertyId) => {
+        //store the default image format
+        data.image = [archiveImage];
+        data.status = "Unpublished";
+        async function updateStatus(id, data) {
+            console.log(data)
+            try {
+                await updateProperty(id, data);
+                //redirect to home
+                props.history.push({
+                    pathname: '/',
+                    state: {user: user}
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        }
+        
+        updateStatus(propertyId.id, data);
+    };
 
     //handleSubmit is called whenever user sends messages
     const handleSubmit = (e) => {
@@ -117,11 +142,20 @@ const Property = (props) => {
     let h1Text;
     if (data.author && user) {
         if (data.author.id === user._id) {
-            h1Text = <h1 className="pageTitle">Hey {user.username}! How are you today?</h1>
-            buttons = <div>
-                <Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property</Button>
-                <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>
-            </div>
+            if(data.status === "Unpublished") {
+                h1Text = <h1 className="pageTitle">Hey {user.username}! How are you today?</h1>
+                buttons = <div>
+                        <Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property</Button>
+                        <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>
+                    </div>
+            } else {
+                h1Text = <h1 className="pageTitle">Hey {user.username}! How are you today?</h1>
+                buttons = <div>
+                    <Button className="mx-1" onClick={() => archieveProperty({id})} variant="secondary">Archive</Button>
+                    <Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property</Button>
+                    <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>
+                </div>
+            }
         } else {
             h1Text = <h1 className="pageTitle">We hope you like it!</h1>
             buttons = <Accordion defaultActiveKey="0">
@@ -234,6 +268,8 @@ async function getProperty(id) {
             .then((json) => json);
         //if image exists
         if (getData.image) {
+            //store the image
+            archiveImage = getData.image[0].filename;
             //prepare the image for read as base64 string
             getData.image = ("data:image/png;base64," + getData.image[0].img);
         }
@@ -246,9 +282,8 @@ async function getProperty(id) {
                 features.push(allFeatures[i]);
             }
         }
-
+        //set the faetures
         getData.features = features;
-
         //return the data fetched from the API endpoint
         return getData;
     } catch (err) {
@@ -333,6 +368,52 @@ async function sendMessage(msg) {
     } catch (err) {
         alert("An error has occurred while sending message!");
         throw new Error("An error has occurred while sending message!");
+    }
+}
+
+/**
+ * The function will archive an existing property
+ *
+ * @name Archive property
+ * @param {Number} id - the id of the property
+ * @param {Object} proeprty - the property info
+ */
+async function updateProperty(id ,property) {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+    let data;
+    const meta = new Map();     
+    
+    //turn the object to json
+    data = JSON.stringify(property);
+    //set the content type
+    meta.set('Content-Type', 'application/json');       
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));   
+    //set new header in order to add the credentials and type
+    let headers = new Headers(meta);   
+    
+    try{
+        const settings = { method: 'put', body: data, withCredentials: true, credentials: 'include', headers: headers };
+
+        //using node fetch to post the data to the API endpoint
+        await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+            .then(res => {                
+                //return true if everything is fine     
+                if(res.status === 200) {
+                    //get a json promise from the respond
+                    return res.json();
+                } else {
+                    //if the user does not exist 
+                    //or
+                    //wrong credentials
+                    throw new Error("Fail.");                 
+                }    
+            }).then(json => json); //get the loged user data
+    } catch(err) {
+        alert("An error has occured while updateProperty!");
+        throw new Error("An error has occured while updateProperty!");
     }
 }
 
