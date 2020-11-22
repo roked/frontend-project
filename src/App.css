@@ -156,3 +156,9 @@ img {
 .userInfo {
     border: 2px solid black;
 }
+
+/*===Login Page css====*/
+
+.alert-heading {
+    text-align: center;
+}

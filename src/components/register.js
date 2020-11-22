@@ -1,18 +1,23 @@
-import React, {useState}  from 'react';
+import React, {useState, useEffect}  from 'react';
 import Form               from 'react-bootstrap/Form';
+import Alert from 'react-bootstrap/Alert';
 import Button             from 'react-bootstrap/Button';
 import fetch              from 'node-fetch';
 import base64             from 'base-64';
 import { withRouter }     from 'react-router';
 
 //define the login page function component
-//TODO - add password check
 const Register = (props) => {
+    //initialize timeLeft
+    const [timeLeft, setTimeLeft] = useState(6);
     //set variables which state will be checked 
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [signUpCode, setCode] = useState("");
+    //store the alert
+    let alertMessage;
+    const [alert, setAlert] = useState();
     
     //this executes when the form is submited
     const handleSubmit = (e) => {        
@@ -29,21 +34,53 @@ const Register = (props) => {
         async function postUser(user) {
             try{
                 //send HTTP request
-                await registerUser(user);   
-                //redirect to login page
-                props.history.push('/login');
+                const result = await registerUser(user);
+                //if the request was successful
+                if(result.status === 200){
+                    alertMessage =
+                        <Alert variant="success">
+                          <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>  
+                    setAlert(alertMessage);
+                    //redirect to login page
+                    props.history.push('/login');
+                } else {
+                    alertMessage =
+                        <Alert variant="danger">
+                          <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>  
+                    setAlert(alertMessage);
+                }
             } catch (err) {
                 console.log(err);
             }
-        }   
-        
+        }        
         //call postData
         postUser(user);      
        
     };
     
+    //useEffect will conutdown and remove the alert
+    useEffect(() => {          
+        // exit early when we reach 0
+        if (!timeLeft) {
+            //remove alert
+            setAlert();
+            //reset the timer
+            setTimeLeft(6);
+        }
+        //using setInterval to run every second
+        const intervalId = setInterval(() => {
+          setTimeLeft(timeLeft - 1);
+        }, 1000);
+        
+        // clear interval on re-render to avoid memory leaks
+        return () => clearInterval(intervalId);  
+    }, [timeLeft]);
+    
     return(
         <div className="container">
+            {alert}
             <h1 className="pageTitle">First time here? You're have one more step!</h1>
             <Form onSubmit={handleSubmit}>
                <Form.Group controlId="formBasicUsername">
@@ -140,7 +177,7 @@ const Register = (props) => {
  *
  * @name Registration
  * @param {Object} user - the user info
- * @returns {Boolean} true - if everything is fine
+ * @returns {Object} result - the outcome of the request
  */
 async function registerUser(user) {
     //get the username and password from env variables
@@ -160,15 +197,18 @@ async function registerUser(user) {
         const settings = { method: 'post', body: JSON.stringify(user), withCredentials: true, credentials: 'include', headers: headers };
         
         //using node fetch to post the data to the API endpoint
-        await fetch('https://program-nissan-3000.codio-box.uk/api/user/register', settings)
-            .then(res => res.json())
-            .then(json => console.log(json));
+        const result = await fetch('https://program-nissan-3000.codio-box.uk/api/user/register', settings)
+            .then(response =>
+                  response.json().then(data => ({
+                    message: data.message,
+                    status: response.status
+                  })
+            ).then(res => res));
         
-        //return true if everything is fine
-        return true;
+        //return the response
+        return result;
     } catch(err) {
-        alert("An error has occured while signUp!");
-        throw new Error("An error has occured while signUp!");
+        console.log(err);
     }
 }
 

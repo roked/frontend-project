@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {withRouter} from "react-router";
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Form from 'react-bootstrap/Form';
 import ListGroupItem from 'react-bootstrap/ListGroupItem'
@@ -20,9 +21,9 @@ const Profile = (props) => {
     //store the state of the properties data
     const [data, setData] = useState([]);
     //store the filtered data
-    const [finaldata, setFinalData] = useState([]);
+    const [finalData, setFinalData] = useState([]);
     //store the properties which will be displayed
-    const [dataFilter, setFilter] = useState([]);  
+    const [dataFilter, setFilter] = useState([]);
     //store the state of the message history data
     const [msgData, setMsgData] = useState([]);
     let propertiesList; //variable to store the properties
@@ -34,8 +35,12 @@ const Profile = (props) => {
     const [balcony, setBalc] = useState(false);
     const [pool, setPool] = useState(false);
     const [barbeque, setBarb] = useState(false);
-    const [gym, setGym] = useState(false);  
-    
+    const [gym, setGym] = useState(false);
+    //store the alert
+    const [alertP, setAlertP] = useState();
+    const [alertM, setAlertM] = useState();
+
+
     //truncate the description
     function Truncate(props) {
         //the max length of a description
@@ -46,17 +51,20 @@ const Profile = (props) => {
     //lifecycle method
     //useEffect is called immediately after the component is mounted to the DOM
     useEffect(() => {
+        let alertProperties;
+        let alertMessages;
+        
         //set the filters    
         const feat = {
-          garden: garden,
-          balcony: balcony,
-          pool: pool,
-          barbeque: barbeque,
-          gym: gym
-        } 
+            garden: garden,
+            balcony: balcony,
+            pool: pool,
+            barbeque: barbeque,
+            gym: gym
+        }
         //set the features (object.value() return an array)               
         setFeatures(Object.values(feat));
-        
+
         async function fetchData(user) {
             //set the user
             const currentUser = {
@@ -67,30 +75,49 @@ const Profile = (props) => {
             const result = await getProperties(currentUser);
             //get messages
             const history = await getHistory();
-            //save responses to variables
-            setData(result);
-            setMsgData(history);
-            //if the filter data is empty
-            if(dataFilter.length === 0) {
-                setFilter(result);
+            
+            if (result.status === 200) {
+                //save responses to variable
+                setData(result.properties);
+                //if the filter data is empty
+                if (dataFilter.length === 0) {
+                    setFilter(result);
+                }
+            } else {
+                alertProperties =
+                    <Alert variant="danger">
+                        <Alert.Heading>{result.message}</Alert.Heading>
+                    </Alert>
+                setAlertP(alertProperties);
+            }
+
+            if (history.status === 200) {
+                //save responses to variable
+                setMsgData(history);
+            } else {
+                alertMessages =
+                    <Alert variant="danger">
+                        <Alert.Heading>{history.message}</Alert.Heading>
+                    </Alert>
+                setAlertM(alertMessages);
             }
         }
 
         //call the function
         fetchData(user);
-        
+
         //if filters were applied
-        if(finaldata.length !== 0) {
+        if (finalData.length !== 0) {
             //if filters do not match any property
-            if(finaldata[0] === 'string') { 
-                setFilter([]); 
+            if (finalData[0] === 'string') {
+                setFilter([]);
             } else {
                 //if final data changes
-                setFilter(finaldata);                
+                setFilter(finalData);
             }
         }
-        
-    }, [user, garden, balcony, pool, barbeque, gym, finaldata, dataFilter.length]);
+
+    }, [user, garden, balcony, pool, barbeque, gym, finalData, dataFilter.length]);
 
     //visitProperty is called whenever a property is selected
     const visitProperty = (propertyId) => {
@@ -124,19 +151,34 @@ const Profile = (props) => {
             </ListGroupItem>
         );
     }
-    
+
     //handleSubmit is called whenever the delete button is clicked
     const handleClick = (id) => {
+        let alertMessages;
         //delete a message
         async function deleteData(id) {
             try {
-                //delete
-                await deleteMessage(id);
-                window.location.reload(false);
+                //delete the message
+                const result = await deleteMessage(id);
+                if (result.status === 200) {
+                    alertMessages =
+                        <Alert variant="success">
+                            <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>
+                    setAlertM(alertMessages);
+                    window.location.reload(false);
+                } else {
+                    alertMessages =
+                        <Alert variant="danger">
+                            <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>
+                    setAlertM(alertMessages);
+                }
             } catch (err) {
                 console.log(err);
             }
         }
+
         //call deleteData
         deleteData(id);
     }
@@ -159,59 +201,67 @@ const Profile = (props) => {
             ))
         });
     }
-                        
+
     //apply filters
     const applyFilters = () => {
         //if no filters were applied
-        if(features.every((val, index) => !val)) {
-            setFinalData([]) 
+        if (features.every((val, index) => !val)) {
+            setFinalData([])
             setFilter(data);
             return;
         }
         //array to store the properties affter filetering
         const finaldata = [];
-        for(const property of data) {
+        for (const property of data) {
             const propertyFeat = property.features;
             //check which properties match the filter
-            if(Array.isArray(propertyFeat) && Array.isArray(features) &&
+            if (Array.isArray(propertyFeat) && Array.isArray(features) &&
                 propertyFeat.length === features.length && propertyFeat.every((val, index) => val === features[index])) {
                 //if match
                 finaldata.push(property);
             }
         }
         //in case no matches are found 
-        if(finaldata.length === 0) {
+        if (finaldata.length === 0) {
             //set the data to be a an array with a string
             setFinalData(["string"])
             return;
         }
         //set the data with filters
-        setFinalData(finaldata)   
-    };  
+        setFinalData(finaldata)
+    };
 
     return (
         <div className="container">
+            {alertP}
             <h1 className="pageTitle">Hey {user.username}! Hope you are doing great!</h1>
             <div className="userInfo row">
                 <div className="col-6 verticalLine">
                     <ListGroup className="list-group-flush">
                         <h1>Your currently active listing</h1>
-                            <div className="my-2">
-                                <div className="checkBox">
-                                    <Form.Check className="centerCheckbox" name="garden" label="Beautiful garden" onChange={e => setGarden(e.target.checked)}/>
-                                    <Form.Check className="centerCheckbox" name="barbeque" label="Barbeque" onChange={e => setBalc(e.target.checked)}/>
-                                    <Form.Check className="centerCheckbox" name="pool" label="Pool" onChange={e => setPool(e.target.checked)}/>
-                                    <Form.Check className="centerCheckbox" name="balcony" label="Balcony" onChange={e => setBarb(e.target.checked)}/>
-                                    <Form.Check className="centerCheckbox" name="gym" label="Gym" onChange={e => setGym(e.target.checked)}/> 
-                                    <Button className="round" onClick={() => applyFilters()} variant="success">Filter</Button>
-                                </div>
+                        <div className="my-2">
+                            <div className="checkBox">
+                                <Form.Check className="centerCheckbox" name="garden" label="Beautiful garden"
+                                            onChange={e => setGarden(e.target.checked)}/>
+                                <Form.Check className="centerCheckbox" name="barbeque" label="Barbeque"
+                                            onChange={e => setBalc(e.target.checked)}/>
+                                <Form.Check className="centerCheckbox" name="pool" label="Pool"
+                                            onChange={e => setPool(e.target.checked)}/>
+                                <Form.Check className="centerCheckbox" name="balcony" label="Balcony"
+                                            onChange={e => setBarb(e.target.checked)}/>
+                                <Form.Check className="centerCheckbox" name="gym" label="Gym"
+                                            onChange={e => setGym(e.target.checked)}/>
+                                <Button className="round" onClick={() => applyFilters()}
+                                        variant="success">Filter</Button>
                             </div>
+                        </div>
                         {propertiesList}
                     </ListGroup>
                 </div>
                 <div className="col-6">
                     <ListGroup className="list-group-flush">
                         <h1>Your messages</h1>
+                        {alertM}
                         {messagesList}
                     </ListGroup>
                 </div>
@@ -249,27 +299,34 @@ async function getProperties(currentUser) {
         };
 
         //using node fetch to get the data from the API
-        const getData = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
-            .then(res => res.json())
-            .then((json) => json);
+        const result = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
+            .then(response =>
+                response.json().then(data => ({
+                        properties: data.properties,
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
 
-        //loop inside the object full of properties
-        Object.keys(getData).forEach((prop) => {
-            // `prop` is the property name
-            // `getData[prop]` is the property value
+        if (result.status === 200) {
+            const allProperties = result.properties;
+            //loop inside the object full of properties
+            Object.keys(allProperties).forEach((prop) => {
+                // `prop` is the property name
+                // `getData[prop]` is the property value
 
-            //if image exists
-            if (getData[prop].image) {
-                //prepare the image for read as base64 string
-                getData[prop].image = ("data:image/png;base64," + getData[prop].image[0].img);
-            }
-        });
+                //if image exists
+                if (allProperties[prop].image) {
+                    //prepare the image for read as base64 string
+                    result.properties[prop].image = ("data:image/png;base64," + allProperties[prop].image[0].img);
+                }
+            });
+        }
 
-        //return the data fetched from the API endpoint
-        return getData;
+        //return the response
+        return result;
     } catch (err) {
-        alert("An error has occurred while fetching user properties!");
-        throw new Error("An error has occurred fetching user properties!");
+        console.log(err);
     }
 }
 
@@ -295,15 +352,20 @@ async function getHistory() {
 
         //using node fetch to get the data from the API
         //return the data fetched from the API endpoint
+        //return the response
         return await fetch('https://program-nissan-3000.codio-box.uk/api/message/get', settings)
-            .then(res => res.json())
-            .then((json) => json);
+            .then(response =>
+                response.json().then(data => ({
+                        history: data.history,
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
     } catch (err) {
-        alert("An error has occurred while fetching user properties!");
-        throw new Error("An error has occurred fetching user properties!");
+        console.log(err);
     }
 }
-    
+
 /**
  * The function will delete a message
  *
@@ -326,12 +388,16 @@ async function deleteMessage(id) {
 
         //using node fetch to delete the selected message
         //return the response
+        //return the response
         return await fetch(`https://program-nissan-3000.codio-box.uk/api/message/${id}`, settings)
-            .then(res => res.json())
-            .then((json) => json);
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
     } catch (err) {
-        alert("An error has occurred while delete!");
-        throw new Error("An error has occurred while delete!");
+        console.log(err);
     }
 }
 

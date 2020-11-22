@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Accordion from 'react-bootstrap/Accordion'
+import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import {useParams} from "react-router-dom";
 import fetch from 'node-fetch';
@@ -13,8 +14,13 @@ import {withRouter} from "react-router";
 //keep the image for archive
 let archiveImage;
 
-//define the property page function component
-//add card which will hold the information
+/**
+ * Define the property page function component
+ *
+ * @name Property page
+ * @param {Object} props
+ * @returns {DOMRect} the jsx code which represents the home page
+ */
 const Property = (props) => {
     //get the user from the props state
     let user;
@@ -24,7 +30,7 @@ const Property = (props) => {
         user = false;
     }
 
-    //using react hook function useState 
+    //using react hook function useState
     //to keep the state of the data
     const [data, setData] = useState([]);
     //keep the state of the msg
@@ -34,15 +40,26 @@ const Property = (props) => {
 
     //get the property id from the params using react hook
     const {id} = useParams();
+    //store the alert
+    const [alert, setAlert] = useState();
 
     //lifecycle method
     //useEffect is called immediately after the component is mounted to the DOM
     useEffect(() => {
+        let alertMessage
         async function fetchData() {
             // send HTTP request
             const result = await getProperty(id);
-            // save response to variable
-            setData(result);
+            if (result.status === 200) {
+                // save response to variable
+                setData(result.property);
+            } else {
+                alertMessage =
+                    <Alert variant="warning">
+                        <Alert.Heading>{result.message}</Alert.Heading>
+                    </Alert>
+                setAlert(alertMessage);
+            }
         }
         //call the function
         fetchData();
@@ -58,21 +75,33 @@ const Property = (props) => {
 
     //handleSubmit is called whenever the delete button is clicked
     const handleClick = (e) => {
+        let alertMessage;
         e.preventDefault();
+
         //delete the property using the api
         async function deleteData(id) {
             try {
                 //delete the property
-                await deleteProperty(id);
-                //redirect to home page
-                props.history.push({
-                    pathname: '/',
-                    state: {user: user}
-                });
+                const result = await deleteProperty(id);
+                if (result.status === 200) {
+                    //redirect to home page
+                    props.history.push({
+                        pathname: '/',
+                        state: {user: user}
+                    });
+                } else {
+                    alertMessage =
+                        <Alert variant="warning">
+                            <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>
+                    setAlert(alertMessage);
+                }
+
             } catch (err) {
                 console.log(err);
             }
         }
+
         //call deleteData
         deleteData(id);
     }
@@ -89,33 +118,44 @@ const Property = (props) => {
             console.log(err);
         }
     };
-    
+
     //editProperty is called whenever edit button is clicked
-    const archieveProperty = (propertyId) => {
+    const archiveProperty = (propertyId) => {
+        let alertMessage;
         //store the default image format
         data.image = [archiveImage];
         data.status = "Unpublished";
+
         async function updateStatus(id, data) {
             console.log(data)
             try {
-                await updateProperty(id, data);
-                //redirect to home
-                props.history.push({
-                    pathname: '/',
-                    state: {user: user}
-                });
+                const result = await updateProperty(id, data);
+                if (result.status === 200) {
+                    //redirect to home
+                    props.history.push({
+                        pathname: '/',
+                        state: {user: user}
+                    });
+                } else {
+                    alertMessage =
+                        <Alert variant="warning">
+                            <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>
+                    setAlert(alertMessage);
+                }
             } catch (err) {
                 console.log(err);
             }
         }
-        
+
         updateStatus(propertyId.id, data);
     };
 
     //handleSubmit is called whenever user sends messages
     const handleSubmit = (e) => {
         e.preventDefault();
-        //get the owner of the property       
+        let alertMessage;
+        //get the owner of the property
         const receiver = data.author.username;
 
         //send a message
@@ -125,10 +165,21 @@ const Property = (props) => {
                 receiver: receiver,
                 msg: msg
             }
-            //HTTP request 
-            const respond = await sendMessage(msgToSend);
-            if (respond) {
+            //HTTP request
+            const result = await sendMessage(msgToSend);
+            if (result.status === 200) {
+                setAlert(alertMessage);
                 window.location.reload(false);
+                alertMessage =
+                    <Alert variant="success">
+                        <Alert.Heading>{result.message}</Alert.Heading>
+                    </Alert>
+            } else {
+                alertMessage =
+                    <Alert variant="warning">
+                        <Alert.Heading>{result.message}</Alert.Heading>
+                    </Alert>
+                setAlert(alertMessage);
             }
         }
 
@@ -142,16 +193,16 @@ const Property = (props) => {
     let h1Text;
     if (data.author && user) {
         if (data.author.id === user._id) {
-            if(data.status === "Unpublished") {
+            if (data.status === "Unpublished") {
                 h1Text = <h1 className="pageTitle">Hey {user.username}! How are you today?</h1>
                 buttons = <div>
-                        <Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property</Button>
-                        <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>
-                    </div>
+                    <Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property</Button>
+                    <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>
+                </div>
             } else {
                 h1Text = <h1 className="pageTitle">Hey {user.username}! How are you today?</h1>
                 buttons = <div>
-                    <Button className="mx-1" onClick={() => archieveProperty({id})} variant="secondary">Archive</Button>
+                    <Button className="mx-1" onClick={() => archiveProperty({id})} variant="secondary">Archive</Button>
                     <Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property</Button>
                     <Button className="mx-1" variant="danger" onClick={handleClick}>Delete</Button>
                 </div>
@@ -212,6 +263,7 @@ const Property = (props) => {
 
     return (
         <div className="container">
+            {alert}
             {h1Text}
             <Card className="singleCard">
                 <Card.Img variant="top" src={data.image}/>
@@ -241,9 +293,9 @@ const Property = (props) => {
 /**
  * The function will fetch a specific property from the RESTApi
  *
- * @name Get a proeprty
+ * @name Get a property
  * @param {Number} id - the id of the property
- * @returns {Object} the property saved under the provided ID
+ * @returns {Object} the response
  */
 async function getProperty(id) {
     //get the username and password from env variables
@@ -263,32 +315,38 @@ async function getProperty(id) {
         const settings = {method: 'Get', withCredentials: true, credentials: 'include', headers: headers};
 
         //using node fetch to get the data from the API
-        const getData = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
-            .then(res => res.json())
-            .then((json) => json);
+        const result = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+            .then(response =>
+                response.json().then(data => ({
+                        property: data.property,
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
+
         //if image exists
-        if (getData.image) {
+        if (result.property.image) {
             //store the image
-            archiveImage = getData.image[0].filename;
+            archiveImage = result.property.image[0].filename;
             //prepare the image for read as base64 string
-            getData.image = ("data:image/png;base64," + getData.image[0].img);
+            result.property.image = ("data:image/png;base64," + result.property.image[0].img);
         }
-        //current features 
+        //current features
         let features = []
         //check which feature is true
         //add it to an array
         for (let i = 0; i < allFeatures.length; i++) {
-            if (getData.features[i]) {
+            if (result.property.features[i]) {
                 features.push(allFeatures[i]);
             }
         }
-        //set the faetures
-        getData.features = features;
-        //return the data fetched from the API endpoint
-        return getData;
+        //set the features
+        result.property.features = features;
+
+        //return the response
+        return result;
     } catch (err) {
-        alert("An error has occurred while getData!");
-        throw new Error("An error has occurred while getData!");
+        console.log(err);
     }
 }
 
@@ -297,7 +355,7 @@ async function getProperty(id) {
  *
  * @name Delete a property
  * @param {Number} id - the id of the property
- * @returns {Boolean} true if everything is okay
+ * @returns {Object} the response
  */
 async function deleteProperty(id) {
     //get the username and password from env variables
@@ -315,11 +373,15 @@ async function deleteProperty(id) {
         //using node fetch to delete the selected property
         //return the response
         return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
-            .then(res => res.json())
-            .then((json) => json);
+            .then(response =>
+                response.json().then(data => ({
+                        properties: data.properties,
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
     } catch (err) {
-        alert("An error has occurred while delete!");
-        throw new Error("An error has occurred while delete!");
+        console.log(err);
     }
 }
 
@@ -328,7 +390,7 @@ async function deleteProperty(id) {
  *
  * @name Send a message
  * @param {Object} msg - the message
- * @returns {Boolean} true if everything is okay
+ * @returns {Object} the response
  */
 async function sendMessage(msg) {
     //get the username and password from env variables
@@ -353,21 +415,15 @@ async function sendMessage(msg) {
         };
 
         //using node fetch to send a message
-        await fetch('https://program-nissan-3000.codio-box.uk/api/message/new', settings)
-            .then(res => {
-                //return true if everything is fine     
-                if (res.status === 200) {
-                    //get a json promise from the respond
-                    return res.json();
-                } else {
-                    //if message not send
-                    throw new Error("Fail.");
-                }
-            });
-        return true;
+        return await fetch('https://program-nissan-3000.codio-box.uk/api/message/new', settings)
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
     } catch (err) {
-        alert("An error has occurred while sending message!");
-        throw new Error("An error has occurred while sending message!");
+        console.log(err);
     }
 }
 
@@ -376,44 +432,38 @@ async function sendMessage(msg) {
  *
  * @name Archive property
  * @param {Number} id - the id of the property
- * @param {Object} proeprty - the property info
+ * @param {Object} property - the property
+ * @returns {Object} the response
  */
-async function updateProperty(id ,property) {
+async function updateProperty(id, property) {
     //get the username and password from env variables
     const username = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
     let data;
-    const meta = new Map();     
-    
+    const meta = new Map();
+
     //turn the object to json
     data = JSON.stringify(property);
     //set the content type
-    meta.set('Content-Type', 'application/json');       
+    meta.set('Content-Type', 'application/json');
     //auth credentials to access the backend API
-    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));   
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
     //set new header in order to add the credentials and type
-    let headers = new Headers(meta);   
-    
-    try{
-        const settings = { method: 'put', body: data, withCredentials: true, credentials: 'include', headers: headers };
+    let headers = new Headers(meta);
+
+    try {
+        const settings = {method: 'put', body: data, withCredentials: true, credentials: 'include', headers: headers};
 
         //using node fetch to post the data to the API endpoint
-        await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
-            .then(res => {                
-                //return true if everything is fine     
-                if(res.status === 200) {
-                    //get a json promise from the respond
-                    return res.json();
-                } else {
-                    //if the user does not exist 
-                    //or
-                    //wrong credentials
-                    throw new Error("Fail.");                 
-                }    
-            }).then(json => json); //get the loged user data
-    } catch(err) {
-        alert("An error has occured while updateProperty!");
-        throw new Error("An error has occured while updateProperty!");
+        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
+    } catch (err) {
+        console.log(err);
     }
 }
 

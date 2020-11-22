@@ -1,6 +1,7 @@
 import React, {useState}  from 'react';
 import Form               from 'react-bootstrap/Form';
 import Button             from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
 import fetch              from 'node-fetch';
 import base64             from 'base-64';
 import { withRouter }     from 'react-router';
@@ -9,6 +10,9 @@ import { withRouter }     from 'react-router';
 const Login = (props) => {  
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    //store the alert
+    let alertMessage;
+    const [alert, setAlert] = useState();
 
     const handleSubmit = (e) => {
         e.preventDefault();       
@@ -21,14 +25,28 @@ const Login = (props) => {
         async function postUser(userData) {
             try{
                 //send HTTP request
-                const userInfo = await signIn(userData);                 
-                
-                //redirect to home page
-                //pass the loged user
-                props.history.push({
-                  pathname: '/',                  
-                  state: { user: userInfo }
-                });
+                const result = await signIn(userData);   
+                console.log(result)
+                //if the request was successful
+                if(result.status === 200){
+                    alertMessage =
+                        <Alert variant="success">
+                          <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>  
+                    setAlert(alertMessage);
+                    //redirect to home page
+                    //pass the logged user
+                    props.history.push({
+                      pathname: '/',                  
+                      state: { user: result.user }
+                    });
+                } else {
+                    alertMessage =
+                        <Alert variant="danger">
+                          <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>  
+                    setAlert(alertMessage);
+                }
             } catch (err) {
                 console.log(err);
             }
@@ -39,6 +57,7 @@ const Login = (props) => {
     
     return(
         <div className="container">
+            {alert}
             <h1 className="pageTitle">Nice to meet you seller. Let's get started!</h1>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
@@ -90,7 +109,7 @@ const Login = (props) => {
  *
  * @name Login
  * @param {Object} user - the user info
- * @returns {Object} user - user is authenticated
+ * @returns {Object} result - the outcome of the request
  */
 async function signIn(user) {
     //get the username and password from env variables
@@ -102,9 +121,6 @@ async function signIn(user) {
     meta.set('Content-Type', 'application/json');
     //auth credentials to access the backend API
     meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-    //allow json data
-    meta.set('Accept', 'application/json');
-
     //set new header in order to add the credentials and type
     let headers = new Headers(meta);   
     
@@ -112,26 +128,19 @@ async function signIn(user) {
         const settings = { method: 'post', body: JSON.stringify(user), withCredentials: true, credentials: 'include', headers: headers };
         
         //using node fetch to post the data to the API endpoint
-        const data = await fetch('https://program-nissan-3000.codio-box.uk/api/user/login', settings)
-            .then(res => {                
-                //return true if everything is fine     
-                if(res.status === 200) {
-                    //get a json promise from the respond
-                    return res.json();
-                } else {
-                    //if the user does not exist 
-                    //or
-                    //wrong credentials
-                    throw new Error("Fail.");                 
-                }    
-            }).then(json => json); //get the loged user data
+        const result = await fetch('https://program-nissan-3000.codio-box.uk/api/user/login', settings)
+            .then(response =>
+                  response.json().then(data => ({
+                    user: data.user,
+                    message: data.message,
+                    status: response.status
+                  })
+            ).then(res => res));
         
-        //return user data
-        return data;
+        //return the response
+        return result;
     } catch(err) {
         console.log(err)
-        alert("An error has occured while signIn!");
-        throw new Error("An error has occured while signIn!");
     }
 }
 
