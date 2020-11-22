@@ -7,6 +7,7 @@ import {
 } from "react-router";
 import Card from 'react-bootstrap/Card';
 import CardDeck from 'react-bootstrap/CardDeck';
+import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import fetch from 'node-fetch';
@@ -16,7 +17,8 @@ import base64 from 'base-64';
  * Define the home page function component which show all properties
  *
  * @name Home page
- * @returns {JSX} the jsx code which represents the home page
+ * @param {Object} props
+ * @returns {DOMRect} the jsx code which represents the home page
  */
 const Home = (props) => {
     //get the user from the props state
@@ -25,7 +27,7 @@ const Home = (props) => {
         user = props.location.state.user;
     } else {
         user = false;
-    }
+    }        
     //check for user (if logged in)
     const [isLoggedIn] = useState(!!user);
     //store the state of the properties data
@@ -33,7 +35,7 @@ const Home = (props) => {
     //store the filtered data
     const [finaldata, setFinalData] = useState([]);
     //store the properties which will be displayed
-    const [dataFilter, setFilter] = useState([]);    
+    const [dataFilter, setFilter] = useState([]);     
 
     //truncate the description
     function Truncate(props) {
@@ -49,10 +51,13 @@ const Home = (props) => {
     const [pool, setPool] = useState(false);
     const [barbeque, setBarb] = useState(false);
     const [gym, setGym] = useState(false);    
-
+    //store the alert
+    const [alert, setAlert] = useState();
+    
     //lifecycle method
     //useEffect is called immediately after the component is mounted to the DOM
     useEffect(() => {
+        let alertMessage;
         //set the filters    
         const feat = {
           garden: garden,
@@ -67,11 +72,19 @@ const Home = (props) => {
         async function fetchData() {
             //send HTTP request
             const result = await getProperties();
-            //set the state for the persistent data
-            setData(result);
-            //if the filter data is empty
-            if(dataFilter.length === 0) {
-                setFilter(result);
+            if(result.status === 200) {
+                //set the state for the persistent data
+                setData(result.properties);
+                //if the filter data is empty
+                if(dataFilter.length === 0) {
+                    setFilter(result);
+                }
+            } else {
+                alertMessage =
+                        <Alert variant="warning">
+                          <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>  
+                setAlert(alertMessage);
             }
         }
         //call the function
@@ -86,7 +99,7 @@ const Home = (props) => {
                 //if final data changes
                 setFilter(finaldata);                
             }
-        }
+        }      
         
     }, [garden, balcony, pool, barbeque, gym, finaldata, dataFilter.length]);
 
@@ -154,6 +167,7 @@ const Home = (props) => {
     
     return (
         <div className="container">
+            {alert}
             <div className="my-2">
                 <h1 className="pageTitle">Our active listings!</h1>
                 {sellButton}
@@ -203,37 +217,46 @@ async function getProperties() {
     const username = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
 
-    //set new header in order to add the credentials
-    let headers = new Headers();
-
+    const meta = new Map(); 
+    //set the content type
+    meta.set('Content-Type', 'application/json');
     //auth credentials to access the backend API
-    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    let headers = new Headers(meta);  
 
     try {
         const settings = {method: 'post', withCredentials: true, credentials: 'include', headers: headers};
 
         //using node fetch to get the data from the API
-        const getData = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
-            .then(res => res.json())
-            .then((json) => json);
+        const result = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
+             .then(response =>
+                  response.json().then(data => ({
+                    properties: data.properties,
+                    message: data.message,
+                    status: response.status
+                  })
+            ).then(res => res));
+     
+        if(result.status === 200) {
+            const allProperties = result.properties;
+            //loop inside the object full of properties
+            Object.keys(allProperties).forEach((prop) => {
+                // `prop` is the property name
+                // `getData[prop]` is the property value
 
-        //loop inside the object full of properties
-        Object.keys(getData).forEach((prop) => {
-            // `prop` is the property name
-            // `getData[prop]` is the property value
-
-            //if image exists
-            if (getData[prop].image) {
-                //prepare the image for read as base64 string
-                getData[prop].image = ("data:image/png;base64," + getData[prop].image[0].img);
-            }
-        });
-
-        //return the data fetched from the API endpoint
-        return getData;
+                //if image exists
+                if (allProperties[prop].image) {
+                    //prepare the image for read as base64 string
+                    result.properties[prop].image = ("data:image/png;base64," + allProperties[prop].image[0].img);
+                }
+            });
+        }
+               
+        //return the response
+        return result;
     } catch (err) {
-        alert("An error has occured while showAll!");
-        throw new Error("An error has occured while showAll!");
+        console.log(err);
     }
 }
 

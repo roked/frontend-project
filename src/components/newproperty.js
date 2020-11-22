@@ -4,12 +4,20 @@ import React, {
 } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
 import Col from 'react-bootstrap/Col';
 import fetch from 'node-fetch';
 import base64 from 'base-64';
 import {withRouter} from "react-router";
 
 //define the new property page function component
+/**
+ * Define the new property page function component
+ *
+ * @name New property page
+ * @param {Object} props
+ * @returns {DOMRect} the jsx code which represents the home page
+ */
 const NewProperty = (props) => {
     //get the user from the props state
     let user;
@@ -34,6 +42,8 @@ const NewProperty = (props) => {
     const [pool, setPool] = useState();
     const [barbeque, setBarb] = useState();
     const [gym, setGym] = useState();
+    //store the alert
+    const [alert, setAlert] = useState();
 
     //handleSubmit is called whenever the form is submitted
     const handleSubmit = (e) => {
@@ -52,14 +62,23 @@ const NewProperty = (props) => {
 
         //send the property to the backend
         async function postData(images, data) {
+            let alertMessage;
             try {
                 //send HTTP request
-                await createProperty(images, data);
-                //redirect to home page
-                props.history.push({
-                    pathname: '/',
-                    state: {user: user}
-                });
+                const result = await createProperty(images, data);
+                if (result.status === 200) {
+                    //redirect to home page
+                    props.history.push({
+                        pathname: '/',
+                        state: {user: user}
+                    });
+                } else {
+                    alertMessage =
+                        <Alert variant="warning">
+                            <Alert.Heading>{result.message}</Alert.Heading>
+                        </Alert>
+                    setAlert(alertMessage);
+                }
             } catch (err) {
                 console.log(err);
             }
@@ -87,6 +106,7 @@ const NewProperty = (props) => {
 
     return (
         <div className="container">
+            {alert}
             <h1 className="pageTitle">Let's gather some information. Please complete the form!</h1>
             <Form onSubmit={handleSubmit}>
                 <Form.Row>
@@ -228,7 +248,7 @@ const NewProperty = (props) => {
  *
  * @name Create new property
  * @param {Buffer} images - the image of the property
- * @param {Object} property - the property info
+ * @param {Object} the response
  */
 async function createProperty(images, property) {
     //get the username and password from env variables
@@ -256,22 +276,15 @@ async function createProperty(images, property) {
         const settings = {method: 'post', body: data, withCredentials: true, credentials: 'include', headers: headers};
 
         //using node fetch to post the data to the API endpoint
-        await fetch(`https://program-nissan-3000.codio-box.uk/api/property/new`, settings)
-            .then(res => {
-                //return true if everything is fine
-                if (res.status === 200) {
-                    //get a json promise from the respond
-                    return res.json();
-                } else {
-                    //if the user does not exist
-                    //or
-                    //wrong credentials
-                    throw new Error("Fail.");
-                }
-            }).then(json => json); //get the lodged user data
+        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/new`, settings)
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
     } catch (err) {
-        alert("An error has occurred while createProperty!");
-        throw new Error("An error has occurred while createProperty!");
+        console.log(err);
     }
 }
 
