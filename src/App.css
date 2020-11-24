@@ -1,40 +1,8 @@
+/*Main css file*/
+
 #white {
     margin: 0;
     color: white;
-}
-
-#cardTitle {
-    margin: 0;
-}
-
-#search {
-    display: -webkit-inline-box;
-    border: none;
-    position: relative;
-    left: 67.3%;
-}
-
-#chatList {
-    min-height: 794px;
-    max-height: 794px;  
-    border-right: 1px solid black;
-}
-
-#chatBox {
-    padding-left: 0;
-    margin-top: 25px;
-    border: 3px solid grey;
-    max-height: 50em;
-    min-height: 50em;
-    border-radius: 10px;
-}
-
-#chatTab {
-    min-height: 794px;
-    max-height: 794px;
-    min-width: 893px;
-    max-width: 893px;
-    position: absolute;
 }
 
 #send_btn {
@@ -77,17 +45,6 @@ img {
     border-radius: 10px;
 }
 
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-}
-
-.text-muted {
-    align-self: center;
-    font-size: larger;
-}
-
-
 .form-group {
     margin: 1rem;
 }
@@ -105,17 +62,12 @@ img {
     max-width: 60%;
 }
 
-.container { 
+.container {
     min-height: 100vh;
 }
 
 .pageTitle {
     margin: 0.5em 0 0.5em 0;
-}
-
-.checkBox {
-    display: flex;
-    justify-content: space-evenly;
 }
 
 .round {
@@ -126,10 +78,25 @@ img {
     margin-bottom: 5em;
 }
 
-.list-group{
-     flex-direction: row;
- }
+.list-group {
+    flex-direction: row;
+}
+/*=====Property css=====*/
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.text-muted {
+    align-self: center;
+    font-size: larger;
+}
 /*======Home CSS========*/
+.checkBox {
+    display: flex;
+    justify-content: space-evenly;
+}
+
 .filters {
     padding: 2px;
     margin: 0 10em;
@@ -139,10 +106,8 @@ img {
 .centerCheckbox {
     padding: 5px 0;
 }
-
 /*======Message CSS=====*/
-
-.accordion>.card {
+.accordion > .card {
     margin: 0;
 }
 
@@ -150,15 +115,15 @@ img {
     flex-grow: 1;
     margin-left: 1em;
 }
-
 /*=====Profile css======*/
+#cardTitle {
+    margin: 0;
+}
 
 .userInfo {
     border: 2px solid black;
 }
-
 /*===Login Page css====*/
-
 .alert-heading {
     text-align: center;
 }

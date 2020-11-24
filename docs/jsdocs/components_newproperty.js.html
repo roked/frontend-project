@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/newproperty.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/newproperty.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module Components/new-property
+ * @description New property page function component
+ * @author Mitko Donchev
+ */
+import React, {
+    useState,
+    useEffect
+} from 'react';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
+import Col from 'react-bootstrap/Col';
+import fetch from 'node-fetch';
+import base64 from 'base-64';
+import {withRouter} from "react-router";
+
+//define the new property page function component
+/**
+ * Define the new property page function component
+ *
+ * @name New property page
+ * @param {Object} props
+ * @returns {DOMRect} the jsx code which represents the new property page
+ */
+const NewProperty = (props) => {
+    //get the user from the props state
+    const user = getUser(props);
+    //set variables which state will be checked
+    const [title, setTitle] = useState("");
+    const [price, setPrice] = useState("");
+    const [category, setCategory] = useState("");
+    const [status, setStatus] = useState("");
+    const [location, setLocation] = useState("");
+    const [images, setImages] = useState();
+    const [features, setFeatures] = useState();
+    const [description, setDescription] = useState("");
+
+    //set features variables which state will be checked
+    const [garden, setGarden] = useState();
+    const [balcony, setBalc] = useState();
+    const [pool, setPool] = useState();
+    const [barbeque, setBarb] = useState();
+    const [gym, setGym] = useState();
+    //store the alert
+    const [alert, setAlert] = useState();
+
+    //handleSubmit is called whenever the form is submitted
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        //store the property info in a object
+        const data = {
+            name: title,
+            price: price,
+            category: category,
+            location: location,
+            status: status,
+            features: features,
+            description: description
+        }
+
+        //send the property to the backend
+        async function postData(images, data) {
+            let alertMessage;
+            try {
+                //send HTTP request
+                const result = await createProperty(images, data);
+                if (result.status === 200) {
+                    //redirect to home page
+                    props.history.push({
+                        pathname: '/',
+                        state: {user: user}
+                    });
+                } else {
+                    alertMessage =
+                        &lt;Alert variant="warning">
+                            &lt;Alert.Heading>{result.message}&lt;/Alert.Heading>
+                        &lt;/Alert>
+                    setAlert(alertMessage);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        //call postData
+        postData(images, data);
+    };
+
+    //lifecycle method
+    //useEffect is called immediately after the component is mounted to the DOM
+    //it will be called each time one of the features state changes
+    useEffect(() => {
+        //store all features in an object
+        const feat = {
+            garden: garden,
+            balcony: balcony,
+            pool: pool,
+            barbeque: barbeque,
+            gym: gym
+        }
+        //set the features (object.value() return an array)
+        setFeatures(Object.values(feat));
+    }, [garden, balcony, pool, barbeque, gym]);
+
+    return (
+        &lt;div className="container">
+            {alert}
+            &lt;h1 className="pageTitle">Let's gather some information. Please complete the form!&lt;/h1>
+            &lt;Form onSubmit={handleSubmit}>
+                &lt;Form.Row>
+                    &lt;Form.Group as={Col} md="3" controlId="validationTitle">
+                        &lt;Form.Label>Title&lt;/Form.Label>
+                        &lt;Form.Control
+                            name="title"
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
+                            required
+                            type="text"
+                            placeholder="My Property"
+                        />
+                        &lt;Form.Control.Feedback type="invalid">
+                            Please provide a valid title.
+                        &lt;/Form.Control.Feedback>
+                    &lt;/Form.Group>
+                    &lt;Form.Group as={Col} md="3" controlId="validationPrice">
+                        &lt;Form.Label>Price&lt;/Form.Label>
+                        &lt;Form.Control
+                            name="price"
+                            value={price}
+                            onChange={e => setPrice(e.target.value)}
+                            required
+                            type="text"
+                            placeholder="£30000"
+                        />
+                        &lt;Form.Control.Feedback type="invalid">
+                            Please provide a valid price.
+                        &lt;/Form.Control.Feedback>
+                    &lt;/Form.Group>
+                    &lt;Form.Group as={Col} md="3" controlId="exampleForm.SelectCategory">
+                        &lt;Form.Label>Category&lt;/Form.Label>
+                        &lt;Form.Control name="category"
+                                      as="select"
+                                      value={category}
+                                      onChange={e => setCategory(e.target.value)}
+                                      custom
+                                      required
+                        >
+                            &lt;option>--Please Select--&lt;/option>
+                            &lt;option>Commercial&lt;/option>
+                            &lt;option>Terrace&lt;/option>
+                            &lt;option>Apartment&lt;/option>
+                            &lt;option>House&lt;/option>
+                            &lt;option>Castle&lt;/option>
+                        &lt;/Form.Control>
+                        &lt;Form.Control.Feedback>Looks good!&lt;/Form.Control.Feedback>
+                    &lt;/Form.Group>
+                &lt;/Form.Row>
+                &lt;Form.Row>
+                    &lt;Form.Group as={Col} md="3" controlId="validationLocation">
+                        &lt;Form.Label>Location&lt;/Form.Label>
+                        &lt;Form.Control
+                            name="location"
+                            value={location}
+                            onChange={e => setLocation(e.target.value)}
+                            type="text"
+                            placeholder="Postcode"
+                            required/>
+                        &lt;Form.Control.Feedback type="invalid">
+                            Please provide a valid postcode.
+                        &lt;/Form.Control.Feedback>
+                    &lt;/Form.Group>
+                    &lt;Form.Group as={Col} md="3" controlId="exampleForm.SelectStatus">
+                        &lt;Form.Label>Status&lt;/Form.Label>
+                        &lt;Form.Control name="status"
+                                      as="select"
+                                      value={status}
+                                      onChange={e => setStatus(e.target.value)}
+                                      custom
+                                      required
+                        >
+                            &lt;option>--Please Select--&lt;/option>
+                            &lt;option>New&lt;/option>
+                            &lt;option>High Priority&lt;/option>
+                            &lt;option>Unpublished&lt;/option>
+                        &lt;/Form.Control>
+                        &lt;Form.Control.Feedback>Looks good!&lt;/Form.Control.Feedback>
+                    &lt;/Form.Group>
+                    &lt;Form.Group as={Col} md="3" controlId="validationFile">
+                        &lt;Form.Label>Attach Images&lt;/Form.Label>
+                        &lt;Form.File
+                            id="files-input"
+                            name="images"
+                            defaultValue={images}
+                            onChange={e => setImages(e.target.files)}
+                            multiple
+                        />
+                    &lt;/Form.Group>
+                &lt;/Form.Row>
+                &lt;Form.Row>
+                    &lt;Form.Group as={Col} md="9" controlId="validationCheck">
+                        &lt;Form.Label>Features&lt;/Form.Label>
+                        &lt;div className="checkBox">
+                            &lt;Form.Check name="garden" label="Beautiful garden" value={garden}
+                                        onChange={e => setGarden(e.target.checked)}/>
+                            &lt;Form.Check name="barbeque" label="Barbeque" value={barbeque}
+                                        onChange={e => setBalc(e.target.checked)}/>
+                            &lt;Form.Check name="pool" label="Pool" value={pool}
+                                        onChange={e => setPool(e.target.checked)}/>
+                            &lt;Form.Check name="balcony" label="Balcony" value={balcony}
+                                        onChange={e => setBarb(e.target.checked)}/>
+                            &lt;Form.Check name="gym" label="Gym" value={gym} onChange={e => setGym(e.target.checked)}/>
+                        &lt;/div>
+                    &lt;/Form.Group>
+                &lt;/Form.Row>
+                &lt;Form.Row>
+                    &lt;Form.Group as={Col} md="9" controlId="validationDescription">
+                        &lt;Form.Label>Description&lt;/Form.Label>
+                        &lt;Form.Control
+                            as="textarea"
+                            name="description"
+                            value={description}
+                            onChange={e => setDescription(e.target.value)}
+                            type="textarea"
+                            placeholder="This property has..."
+                            required/>
+                        &lt;Form.Control.Feedback type="invalid">
+                            Please provide a valid description.
+                        &lt;/Form.Control.Feedback>
+                    &lt;/Form.Group>
+                &lt;/Form.Row>
+                &lt;Button className="round" type="submit" variant="success">Publish property!&lt;/Button>
+            &lt;/Form>
+        &lt;/div>
+    );
+}
+
+/**
+ * The function will send the new property to the RESTApi
+ *
+ * @name Create new property
+ * @param {Buffer} images - the image of the property
+ * @param {Buffer} property - the property info
+ * @returns {Object} the response data
+ */
+async function createProperty(images, property) {
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
+
+    //create new form data which will be sent to the backend
+    const data = new FormData();
+    if (images) {
+        for (let i = 0; i &lt; images.length; i++) {
+            data.append('file', images[i])
+        }
+    }
+
+    //place each value from the property object as part of the formData
+    Object.keys(property).forEach(key => data.append(key, property[key]));
+    try {
+        const settings = {method: 'post', body: data, withCredentials: true, credentials: 'include', headers: headers};
+
+        //using node fetch to post the data to the API endpoint
+        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/new`, settings)
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+/**
+ * The function will get the current user if one.
+ *
+ * @name Get user
+ * @param {Object} props - the react props
+ * @returns {Object} the current user info
+ * @returns {Boolean} false - if no user
+ */
+function getUser(props) {
+    let user;
+    if (props.location.state) {
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    return user;
+}
+
+/**
+ * The function will get the mata for the headers.
+ *
+ * @name Get meta
+ * @returns {Map} meta - a map of key values
+ */
+function setMetaForHeaders() {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    const meta = new Map();
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    return meta;
+}
+
+export default withRouter(NewProperty);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components_about.html">Components/about</a></li><li><a href="module-Components_edit-property.html">Components/edit-property</a></li><li><a href="module-Components_home.html">Components/home</a></li><li><a href="module-Components_index.html">Components/index</a></li><li><a href="module-Components_login.html">Components/login</a></li><li><a href="module-Components_new-property.html">Components/new-property</a></li><li><a href="module-Components_profile.html">Components/profile</a></li><li><a href="module-Components_property.html">Components/property</a></li><li><a href="module-Components_register.html">Components/register</a></li><li><a href="module-Layout_footer.html">Layout/footer</a></li><li><a href="module-Layout_index.html">Layout/index</a></li><li><a href="module-Layout_navbar.html">Layout/navbar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Nov 24 2020 17:14:16 GMT+0000 (GMT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

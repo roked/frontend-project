@@ -1,3 +1,8 @@
+/**
+ * @module Layout/navbar
+ * @description Navbar function component
+ * @author Mitko Donchev
+ */
 import React, {
     useState,
     useEffect,
@@ -10,25 +15,25 @@ import fetch from 'node-fetch';
 import base64 from 'base-64';
 import {withRouter} from "react-router";
 
-//define the default layout function component
-//the child components go inside using props.children
+/**
+ * Define the navbar function component
+ *
+ * @name Navbar
+ * @param {Object} props
+ * @returns {DOMRect} the jsx code which represents the navbar
+ */
 const NavbarL = (props) => {
     //initialize timeLeft
     const [timeLeft, setTimeLeft] = useState(6);
-    //get the user from the props state
-    let user;
     //set the available buttons
     let userButtons;
-    if (props.location.state) {
-        user = props.location.state.user;
-    } else {
-        user = false;
-    }
+    //get the user from the props state
+    const user = getUser(props);
     //check for user (if logged in)
     const [isLoggedIn, setUser] = useState(!!user);
     //useRef to keep track of initialMount
     const isInitialMount = useRef(true);
-    //store the alert    
+    //store the alert
     const [alert, setAlert] = useState();
     //store the alert
     let alertMessage;
@@ -50,7 +55,7 @@ const NavbarL = (props) => {
                     setAlert(alertMessage);
                     setUser(false)
                     //redirect to home page
-                    //pass the loged user
+                    //pass the logged user
                     props.history.push({
                         pathname: '/login',
                         state: {user: false}
@@ -202,20 +207,11 @@ const NavbarL = (props) => {
  * @name Logout
  */
 async function signOut() {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
-
-    const meta = new Map();
-    //set the content type
-    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-
-    //set new header in order to add the credentials and type
-    let headers = new Headers(meta);
-
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
     try {
         const settings = {method: 'get', withCredentials: true, credentials: 'include', headers: headers};
-
         //using node fetch to post the data to the API endpoint
         return await fetch('https://program-nissan-3000.codio-box.uk/api/user/logout', settings)
             .then(response =>
@@ -227,6 +223,44 @@ async function signOut() {
     } catch (err) {
         console.log(err);
     }
+}
+
+/**
+ * The function will get the current user if one.
+ *
+ * @name Get user
+ * @param {Object} props - the react props
+ * @returns {Object} the current user info
+ * @returns {Boolean} false - if no user
+ */
+function getUser(props) {
+    let user;
+    if (props.location.state) {
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    return user;
+}
+
+/**
+ * The function will get the mata for the headers.
+ *
+ * @name Get meta
+ * @returns {Map} meta - a map of key values
+ */
+function setMetaForHeaders() {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    const meta = new Map();
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    return meta;
 }
 
 export default withRouter(NavbarL);

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: layout/navbar.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: layout/navbar.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module Layout/navbar
+ * @description Navbar function component
+ * @author Mitko Donchev
+ */
+import React, {
+    useState,
+    useEffect,
+    useRef
+} from 'react';
+import Navbar from 'react-bootstrap/Navbar';
+import Nav from 'react-bootstrap/Nav';
+import Alert from 'react-bootstrap/Alert';
+import fetch from 'node-fetch';
+import base64 from 'base-64';
+import {withRouter} from "react-router";
+
+/**
+ * Define the navbar function component
+ *
+ * @name Navbar
+ * @param {Object} props
+ * @returns {DOMRect} the jsx code which represents the navbar
+ */
+const NavbarL = (props) => {
+    //initialize timeLeft
+    const [timeLeft, setTimeLeft] = useState(6);
+    //set the available buttons
+    let userButtons;
+    //get the user from the props state
+    const user = getUser(props);
+    //check for user (if logged in)
+    const [isLoggedIn, setUser] = useState(!!user);
+    //useRef to keep track of initialMount
+    const isInitialMount = useRef(true);
+    //store the alert
+    const [alert, setAlert] = useState();
+    //store the alert
+    let alertMessage;
+
+    //this function runs when the user click sign out
+    const handleSignOut = (e) => {
+        e.preventDefault();
+
+        //send the user object
+        async function singOutUser() {
+            try {
+                //send HTTP request
+                const result = await signOut();
+                if (result.status === 200) {
+                    alertMessage =
+                        &lt;Alert variant="success">
+                            &lt;Alert.Heading>{result.message}&lt;/Alert.Heading>
+                        &lt;/Alert>
+                    setAlert(alertMessage);
+                    setUser(false)
+                    //redirect to home page
+                    //pass the logged user
+                    props.history.push({
+                        pathname: '/login',
+                        state: {user: false}
+                    });
+                } else {
+                    alertMessage =
+                        &lt;Alert variant="danger">
+                            &lt;Alert.Heading>{result.message}&lt;/Alert.Heading>
+                        &lt;/Alert>
+                    setAlert(alertMessage);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        //call postData
+        singOutUser();
+    }
+
+    //useEffect will run only on updates except initial mount
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+        } else {
+            setUser(user);
+        }
+
+        // exit early when we reach 0
+        if (!timeLeft) {
+            //remove alert
+            setAlert();
+            //reset the timer
+            setTimeLeft(6);
+        }
+
+        //using setInterval to run every second
+        const intervalId = setInterval(() => {
+            setTimeLeft(timeLeft - 1);
+        }, 1000);
+
+        // clear interval on re-render to avoid memory leaks
+        return () => clearInterval(intervalId);
+
+    }, [user, timeLeft]);
+
+    //go back to home
+    const goHome = () => {
+        try {
+            setAlert();
+            //redirect to homepage
+            props.history.push({
+                pathname: '/',
+                state: {user: user}
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    //go back to about page
+    const goAbout = () => {
+        try {
+            setAlert();
+            //redirect to about
+            props.history.push({
+                pathname: '/about',
+                state: {user: user}
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    //go back to about page
+    const goProfile = () => {
+        try {
+            setAlert();
+            //redirect to about
+            props.history.push({
+                pathname: '/profile',
+                state: {user: user}
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    //login page
+    const loginPage = () => {
+        try {
+            setAlert();
+            //redirect to about
+            props.history.push({
+                pathname: '/login',
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    //register page
+    const registerPage = () => {
+        try {
+            setAlert();
+            //redirect to about
+            props.history.push({
+                pathname: '/register',
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    if (isLoggedIn) {
+        userButtons = &lt;Nav className="ml-auto">
+            &lt;Nav.Link onClick={() => goProfile()}>Profile&lt;/Nav.Link>
+            &lt;Nav.Link onClick={handleSignOut}>Sign Out&lt;/Nav.Link>
+        &lt;/Nav>
+    } else {
+        userButtons = &lt;Nav className="ml-auto">
+            &lt;Nav.Link onClick={() => registerPage()}>Sign Up&lt;/Nav.Link>
+            &lt;Nav.Link onClick={() => loginPage()}>Sign In&lt;/Nav.Link>
+        &lt;/Nav>
+    }
+
+    return (
+        &lt;div>
+            &lt;Navbar bg="dark" variant="dark" expand="lg">
+                &lt;Navbar.Brand href="#">Real Estate Listing&lt;/Navbar.Brand>
+                &lt;Navbar.Toggle aria-controls="basic-navbar-nav"/>
+                &lt;Navbar.Collapse id="basic-navbar-nav">
+                    &lt;Nav className="mr-auto">
+                        &lt;Nav.Link onClick={() => goHome()}>Home&lt;/Nav.Link>
+                        &lt;Nav.Link onClick={() => goAbout()}>About&lt;/Nav.Link>
+                    &lt;/Nav>
+                    {userButtons}
+                &lt;/Navbar.Collapse>
+            &lt;/Navbar>
+            {props.children}
+            {alert}
+        &lt;/div>
+    );
+}
+
+/**
+ * The function will sign out the user
+ *
+ * @name Logout
+ */
+async function signOut() {
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
+    try {
+        const settings = {method: 'get', withCredentials: true, credentials: 'include', headers: headers};
+        //using node fetch to post the data to the API endpoint
+        return await fetch('https://program-nissan-3000.codio-box.uk/api/user/logout', settings)
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+/**
+ * The function will get the current user if one.
+ *
+ * @name Get user
+ * @param {Object} props - the react props
+ * @returns {Object} the current user info
+ * @returns {Boolean} false - if no user
+ */
+function getUser(props) {
+    let user;
+    if (props.location.state) {
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    return user;
+}
+
+/**
+ * The function will get the mata for the headers.
+ *
+ * @name Get meta
+ * @returns {Map} meta - a map of key values
+ */
+function setMetaForHeaders() {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    const meta = new Map();
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    return meta;
+}
+
+export default withRouter(NavbarL);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components_about.html">Components/about</a></li><li><a href="module-Components_edit-property.html">Components/edit-property</a></li><li><a href="module-Components_home.html">Components/home</a></li><li><a href="module-Components_index.html">Components/index</a></li><li><a href="module-Components_login.html">Components/login</a></li><li><a href="module-Components_new-property.html">Components/new-property</a></li><li><a href="module-Components_profile.html">Components/profile</a></li><li><a href="module-Components_property.html">Components/property</a></li><li><a href="module-Components_register.html">Components/register</a></li><li><a href="module-Layout_footer.html">Layout/footer</a></li><li><a href="module-Layout_index.html">Layout/index</a></li><li><a href="module-Layout_navbar.html">Layout/navbar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Nov 24 2020 17:14:16 GMT+0000 (GMT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

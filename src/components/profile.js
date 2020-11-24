@@ -1,3 +1,8 @@
+/**
+ * @module Components/profile
+ * @description Profile page function component
+ * @author Mitko Donchev
+ */
 import React, {useEffect, useState} from 'react';
 import {withRouter} from "react-router";
 import Card from 'react-bootstrap/Card';
@@ -9,15 +14,16 @@ import ListGroupItem from 'react-bootstrap/ListGroupItem'
 import fetch from 'node-fetch';
 import base64 from 'base-64';
 
+/**
+ * Define the profile page function component
+ *
+ * @name Profile page
+ * @param {Object} props
+ * @returns {DOMRect} the jsx code which represents the profile page
+ */
 const Profile = (props) => {
     //get the user from the props state
-    let user;
-    if (props.location.state) {
-        user = props.location.state.user;
-    } else {
-        user = false;
-    }
-
+    const user = getUser(props);
     //store the state of the properties data
     const [data, setData] = useState([]);
     //store the filtered data
@@ -29,7 +35,7 @@ const Profile = (props) => {
     let propertiesList; //variable to store the properties
     let messagesList = []; //array to store a list of massages
 
-    //set features variables which state will be checked 
+    //set features variables which state will be checked
     const [features, setFeatures] = useState();
     const [garden, setGarden] = useState(false);
     const [balcony, setBalc] = useState(false);
@@ -39,7 +45,6 @@ const Profile = (props) => {
     //store the alert
     const [alertP, setAlertP] = useState();
     const [alertM, setAlertM] = useState();
-
 
     //truncate the description
     function Truncate(props) {
@@ -53,8 +58,8 @@ const Profile = (props) => {
     useEffect(() => {
         let alertProperties;
         let alertMessages;
-        
-        //set the filters    
+
+        //set the filters
         const feat = {
             garden: garden,
             balcony: balcony,
@@ -62,7 +67,7 @@ const Profile = (props) => {
             barbeque: barbeque,
             gym: gym
         }
-        //set the features (object.value() return an array)               
+        //set the features (object.value() return an array)
         setFeatures(Object.values(feat));
 
         async function fetchData(user) {
@@ -75,7 +80,7 @@ const Profile = (props) => {
             const result = await getProperties(currentUser);
             //get messages
             const history = await getHistory();
-            
+
             if (result.status === 200) {
                 //save responses to variable
                 setData(result.properties);
@@ -155,6 +160,7 @@ const Profile = (props) => {
     //handleSubmit is called whenever the delete button is clicked
     const handleClick = (id) => {
         let alertMessages;
+
         //delete a message
         async function deleteData(id) {
             try {
@@ -210,25 +216,25 @@ const Profile = (props) => {
             setFilter(data);
             return;
         }
-        //array to store the properties affter filetering
-        const finaldata = [];
+        //array to store the properties after filtering
+        const finalData = [];
         for (const property of data) {
             const propertyFeat = property.features;
             //check which properties match the filter
             if (Array.isArray(propertyFeat) && Array.isArray(features) &&
                 propertyFeat.length === features.length && propertyFeat.every((val, index) => val === features[index])) {
                 //if match
-                finaldata.push(property);
+                finalData.push(property);
             }
         }
-        //in case no matches are found 
-        if (finaldata.length === 0) {
+        //in case no matches are found
+        if (finalData.length === 0) {
             //set the data to be a an array with a string
             setFinalData(["string"])
             return;
         }
         //set the data with filters
-        setFinalData(finaldata)
+        setFinalData(finalData)
     };
 
     return (
@@ -274,20 +280,13 @@ const Profile = (props) => {
  * The function will fetch all properties from the RESTApi
  *
  * @name Get the all properties
- * @returns {Object} all properties saved in the DB
+ * @params {Object} currentUser - the current user info
+ * @returns {Object} the response data
  */
 async function getProperties(currentUser) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
-
-    const meta = new Map();
-    //set the content type
-    meta.set('Content-Type', 'application/json');
-    //auth credentials to access the backend API
-    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-    //set new header in order to add the credentials and type
-    let headers = new Headers(meta);
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
 
     try {
         const settings = {
@@ -297,7 +296,6 @@ async function getProperties(currentUser) {
             credentials: 'include',
             headers: headers
         };
-
         //using node fetch to get the data from the API
         const result = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
             .then(response =>
@@ -307,7 +305,6 @@ async function getProperties(currentUser) {
                         status: response.status
                     })
                 ).then(res => res));
-
         if (result.status === 200) {
             const allProperties = result.properties;
             //loop inside the object full of properties
@@ -322,7 +319,6 @@ async function getProperties(currentUser) {
                 }
             });
         }
-
         //return the response
         return result;
     } catch (err) {
@@ -334,24 +330,15 @@ async function getProperties(currentUser) {
  * The function will fetch message history from the RESTApi
  *
  * @name Get the message history
- * @returns {Object} all messages saved in the DB
+ * @returns {Object} the response data
  */
 async function getHistory() {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
-
-    const meta = new Map();
-    //auth credentials to access the backend API
-    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-    //set new header in order to add the credentials
-    let headers = new Headers(meta);
-
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
     try {
         const settings = {method: 'get', withCredentials: true, credentials: 'include', headers: headers};
-
         //using node fetch to get the data from the API
-        //return the data fetched from the API endpoint
         //return the response
         return await fetch('https://program-nissan-3000.codio-box.uk/api/message/get', settings)
             .then(response =>
@@ -371,23 +358,15 @@ async function getHistory() {
  *
  * @name Delete a message
  * @param {Number} id - the id of the message
- * @returns {Boolean} true if everything is okay
+ * @returns {Object} the response data
  */
 async function deleteMessage(id) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
-
-    //set new header in order to add the credentials
-    let headers = new Headers();
-    //auth credentials to access the backend API
-    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
     try {
         const settings = {method: 'delete', withCredentials: true, credentials: 'include', headers: headers};
-
         //using node fetch to delete the selected message
-        //return the response
         //return the response
         return await fetch(`https://program-nissan-3000.codio-box.uk/api/message/${id}`, settings)
             .then(response =>
@@ -399,6 +378,44 @@ async function deleteMessage(id) {
     } catch (err) {
         console.log(err);
     }
+}
+
+/**
+ * The function will get the current user if one.
+ *
+ * @name Get user
+ * @param {Object} props - the react props
+ * @returns {Object} the current user info
+ * @returns {Boolean} false - if no user
+ */
+function getUser(props) {
+    let user;
+    if (props.location.state) {
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    return user;
+}
+
+/**
+ * The function will get the mata for the headers.
+ *
+ * @name Get meta
+ * @returns {Map} meta - a map of key values
+ */
+function setMetaForHeaders() {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    const meta = new Map();
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    return meta;
 }
 
 export default withRouter(Profile);

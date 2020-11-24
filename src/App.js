@@ -1,57 +1,58 @@
-//Read more why to use functions https://stackoverflow.com/questions/36097965/when-to-use-es6-class-based-react-components-vs-functional-es6-react-components
-
+/**
+ * @description Main app file
+ * @author Mitko Donchev
+ */
 import React from 'react';
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+    BrowserRouter as Router,
+    Switch,
+    Route,
 } from "react-router-dom";
 
 //import all pages at once
-import { Home, Login, About, Register, Property, NewProperty, EditProperty, Profile} from './components'
+import {Home, Login, About, Register, Property, NewProperty, EditProperty, Profile} from './components'
 //import the layout component
-import { NavbarL, Footer } from './layout';
+import {NavbarL, Footer} from './layout';
 //import css style
 import './App.css';
 
 //wrapping everything inside Layout component
-//define and export the app function 
-//TODO - add id to the property and edit pages
-export default function App() {    
+//define and export the app function
+export default function App() {
     return (
         <Router>
-            <NavbarL />
+            <NavbarL/>
             <Switch>
                 <Route path="/property/delete">
-                    <Home />
+                    <Home/>
                 </Route>
                 <Route path="/property/:id/edit">
-                    <EditProperty />
+                    <EditProperty/>
                 </Route>
                 <Route path="/property/new">
-                    <NewProperty />
+                    <NewProperty/>
                 </Route>
                 <Route path="/property/:id">
-                    <Property />
+                    <Property/>
                 </Route>
                 <Route path="/profile">
-                    <Profile />
+                    <Profile/>
                 </Route>
                 <Route path="/register">
-                    <Register />
+                    <Register/>
                 </Route>
                 <Route path="/about">
-                    <About />
+                    <About/>
                 </Route>
                 <Route path="/login">
-                    <Login />
+                    <Login/>
                 </Route>
                 <Route path="/">
-                    <Home />
+                    <Home/>
                 </Route>
             </Switch>
-            <Footer />
+            <Footer/>
         </Router>
-        );
+    );
 }
-        
+
