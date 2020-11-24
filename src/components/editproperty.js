@@ -1,3 +1,8 @@
+/**
+ * @module Components/edit-property
+ * @description Edit roperty page function component
+ * @author Mitko Donchev
+ */
 import React, {
     useState,
     useEffect
@@ -16,16 +21,11 @@ import base64 from 'base-64';
  *
  * @name Edit property page
  * @param {Object} props
- * @returns {DOMRect} the jsx code which represents the home page
+ * @returns {DOMRect} the jsx code which represents the edit property page
  */
 const EditProperty = (props) => {
     //get the user from the props state
-    let user;
-    if (props.location.state) {
-        user = props.location.state.user;
-    } else {
-        user = false;
-    }
+    const user = getUser(props);
     //using react hook function useState to control the state
     const [data, setData] = useState([]);
     //get the property id from the params using react hook
@@ -42,11 +42,11 @@ const EditProperty = (props) => {
     const [description, setDescription] = useState("");
 
     //set features variables which state will be checked
-    const [garden, setGarden] = useState();
-    const [balcony, setBalc] = useState();
-    const [pool, setPool] = useState();
-    const [barbeque, setBarb] = useState();
-    const [gym, setGym] = useState();
+    const [garden, setGarden] = useState(false);
+    const [balcony, setBalc] = useState(false);
+    const [pool, setPool] = useState(false);
+    const [barbeque, setBarb] = useState(false);
+    const [gym, setGym] = useState(false);
     //store the alert
     const [alert, setAlert] = useState();
 
@@ -264,13 +264,6 @@ const EditProperty = (props) => {
                         </Form.Control.Feedback>
                     </Form.Group>
                 </Form.Row>
-                <Form.Group>
-                    <Form.Check
-                        required
-                        label="Agree to terms and conditions"
-                        feedback="You must agree before submitting."
-                    />
-                </Form.Group>
                 <Button className="round" type="submit" variant="success">Update!</Button>
             </Form>
         </div>
@@ -285,22 +278,14 @@ const EditProperty = (props) => {
  * @returns {Object} the property saved under the provided ID
  */
 async function getProperty(id) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
 
     //all available features
     const allFeatures = ['Beautiful garden', 'Barbeque', 'Pool', 'Balcony', 'Gym'];
-
-    //set new header in order to add the credentials
-    let headers = new Headers();
-
-    //auth credentials to access the backend API
-    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-
     try {
         const settings = {method: 'Get', withCredentials: true, credentials: 'include', headers: headers};
-
         //using node fetch to get the data from the API
         const result = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}/edit`, settings)
             .then(response =>
@@ -311,23 +296,23 @@ async function getProperty(id) {
                     })
                 ).then(res => res));
 
-        //current features
-        let features = []
-
-        //check which feature is true
-        //add it to an array
-        for (let i = 0; i < allFeatures.length; i++) {
-            if (result.property.features[i]) {
-                features.push(allFeatures[i]);
+        if (result.status === 200) {
+            let features = []
+            //check which feature is true
+            //add it to an array
+            for (let i = 0; i < allFeatures.length; i++) {
+                if (result.property.features[i]) {
+                    features.push(allFeatures[i]);
+                }
             }
+            //set the features
+            result.property.features = features;
         }
-        result.property.features = features;
 
-        //return the data fetched from the API endpoint
+        //return the response
         return result;
     } catch (err) {
-        alert("An error has occured while getData!");
-        throw new Error("An error has occured while getData!");
+        console.log(err);
     }
 }
 
@@ -340,12 +325,10 @@ async function getProperty(id) {
  * @param {Object} property - the property info
  */
 async function updateProperty(id, images, property) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
     let data;
-    const meta = new Map();
-
     //if the image is a string (no new image selected)
     if (typeof (images) !== 'string') {
         //create new form data which will be sent to the backend
@@ -359,27 +342,14 @@ async function updateProperty(id, images, property) {
 
         //place each value from the property object as part of the formData
         Object.keys(property).forEach(key => data.append(key, property[key]));
-
-        //set the content type
-        meta.set('Accept', 'application/json');
     } else {
         //set the image value
         property.image = images;
         //turn the object to json
         data = JSON.stringify(property);
-        //set the content type
-        meta.set('Content-Type', 'application/json');
     }
-
-    //auth credentials to access the backend API
-    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-
-    //set new header in order to add the credentials and type
-    let headers = new Headers(meta);
-
     try {
         const settings = {method: 'put', body: data, withCredentials: true, credentials: 'include', headers: headers};
-
         //using node fetch to post the data to the API endpoint
         return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
             .then(response =>
@@ -391,6 +361,44 @@ async function updateProperty(id, images, property) {
     } catch (err) {
         console.log(err);
     }
+}
+
+/**
+ * The function will get the current user if one.
+ *
+ * @name Get user
+ * @param {Object} props - the react props
+ * @returns {Object} the current user info
+ * @returns {Boolean} false - if no user
+ */
+function getUser(props) {
+    let user;
+    if (props.location.state) {
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    return user;
+}
+
+/**
+ * The function will get the mata for the headers.
+ *
+ * @name Get meta
+ * @returns {Map} meta - a map of key values
+ */
+function setMetaForHeaders() {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    const meta = new Map();
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    return meta;
 }
 
 export default withRouter(EditProperty);

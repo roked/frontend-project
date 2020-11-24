@@ -1,3 +1,8 @@
+/**
+ * @module Components/new-property
+ * @description New property page function component
+ * @author Mitko Donchev
+ */
 import React, {
     useState,
     useEffect
@@ -16,16 +21,11 @@ import {withRouter} from "react-router";
  *
  * @name New property page
  * @param {Object} props
- * @returns {DOMRect} the jsx code which represents the home page
+ * @returns {DOMRect} the jsx code which represents the new property page
  */
 const NewProperty = (props) => {
     //get the user from the props state
-    let user;
-    if (props.location.state) {
-        user = props.location.state.user;
-    } else {
-        user = false;
-    }
+    const user = getUser(props);
     //set variables which state will be checked
     const [title, setTitle] = useState("");
     const [price, setPrice] = useState("");
@@ -48,7 +48,6 @@ const NewProperty = (props) => {
     //handleSubmit is called whenever the form is submitted
     const handleSubmit = (e) => {
         e.preventDefault();
-
         //store the property info in a object
         const data = {
             name: title,
@@ -230,13 +229,6 @@ const NewProperty = (props) => {
                         </Form.Control.Feedback>
                     </Form.Group>
                 </Form.Row>
-                <Form.Group>
-                    <Form.Check
-                        required
-                        label="Agree to terms and conditions"
-                        feedback="You must agree before submitting."
-                    />
-                </Form.Group>
                 <Button className="round" type="submit" variant="success">Publish property!</Button>
             </Form>
         </div>
@@ -248,12 +240,13 @@ const NewProperty = (props) => {
  *
  * @name Create new property
  * @param {Buffer} images - the image of the property
- * @param {Object} the response
+ * @param {Buffer} property - the property info
+ * @returns {Object} the response data
  */
 async function createProperty(images, property) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
 
     //create new form data which will be sent to the backend
     const data = new FormData();
@@ -265,13 +258,6 @@ async function createProperty(images, property) {
 
     //place each value from the property object as part of the formData
     Object.keys(property).forEach(key => data.append(key, property[key]));
-
-    //set new header in order to add the credentials
-    let headers = new Headers();
-
-    //auth credentials to access the backend API
-    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password), 'Accept', 'application/json');
-
     try {
         const settings = {method: 'post', body: data, withCredentials: true, credentials: 'include', headers: headers};
 
@@ -286,6 +272,44 @@ async function createProperty(images, property) {
     } catch (err) {
         console.log(err);
     }
+}
+
+/**
+ * The function will get the current user if one.
+ *
+ * @name Get user
+ * @param {Object} props - the react props
+ * @returns {Object} the current user info
+ * @returns {Boolean} false - if no user
+ */
+function getUser(props) {
+    let user;
+    if (props.location.state) {
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    return user;
+}
+
+/**
+ * The function will get the mata for the headers.
+ *
+ * @name Get meta
+ * @returns {Map} meta - a map of key values
+ */
+function setMetaForHeaders() {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    const meta = new Map();
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    return meta;
 }
 
 export default withRouter(NewProperty);

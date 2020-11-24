@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/property.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/property.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module Components/property
+ * @description Property page function component
+ * @author Mitko Donchev
+ */
+import React, {useEffect, useState} from 'react';
+import Card from 'react-bootstrap/Card';
+import Button from 'react-bootstrap/Button';
+import ListGroup from 'react-bootstrap/ListGroup';
+import ListGroupItem from 'react-bootstrap/ListGroupItem';
+import Accordion from 'react-bootstrap/Accordion'
+import Alert from 'react-bootstrap/Alert';
+import Form from 'react-bootstrap/Form';
+import {useParams} from "react-router-dom";
+import fetch from 'node-fetch';
+import base64 from 'base-64';
+import {withRouter} from "react-router";
+
+//keep the image for archive
+let archiveImage;
+
+/**
+ * Define the property page function component
+ *
+ * @name Property page
+ * @param {Object} props
+ * @returns {DOMRect} the jsx code which represents the property page
+ */
+const Property = (props) => {
+    //get the user from the props state
+    const user = getUser(props);
+    //using react hook function useState
+    //to keep the state of the data
+    const [data, setData] = useState([]);
+    //keep the state of the msg
+    const [msg, setMsg] = useState("");
+    //get the property id from the params using react hook
+    const {id} = useParams();
+    //store the alert
+    const [alert, setAlert] = useState();
+
+    //lifecycle method
+    //useEffect is called immediately after the component is mounted to the DOM
+    useEffect(() => {
+        let alertMessage
+        async function fetchData() {
+            // send HTTP request
+            const result = await getProperty(id);
+            if (result.status === 200) {
+                // save response to variable
+                setData(result.property);
+            } else {
+                alertMessage =
+                    &lt;Alert variant="danger">
+                        &lt;Alert.Heading>{result.message}&lt;/Alert.Heading>
+                    &lt;/Alert>
+                setAlert(alertMessage);
+            }
+        }
+        //call the function
+        fetchData();
+    }, [id]);
+
+    //creat a list of all properties
+    const listFeatures = getListOfFeatures(data);
+
+    //handleSubmit is called whenever the delete button is clicked
+    const handleClick = (e) => {
+        let alertMessage;
+        e.preventDefault();
+
+        //delete the property using the api
+        async function deleteData(id) {
+            try {
+                //delete the property
+                const result = await deleteProperty(id);
+                if (result.status === 200) {
+                    //redirect to home page
+                    props.history.push({
+                        pathname: '/',
+                        state: {user: user}
+                    });
+                } else {
+                    alertMessage =
+                        &lt;Alert variant="warning">
+                            &lt;Alert.Heading>{result.message}&lt;/Alert.Heading>
+                        &lt;/Alert>
+                    setAlert(alertMessage);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        //call deleteData
+        deleteData(id);
+    }
+
+    //editProperty is called whenever edit button is clicked
+    const editProperty = (propertyId) => {
+        try {
+            //redirect to property
+            props.history.push({
+                pathname: '/property/' + propertyId.id + '/edit',
+                state: {user: user}
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    //editProperty is called whenever edit button is clicked
+    const archiveProperty = (propertyId) => {
+        let alertMessage;
+        //store the default image format
+        data.image = [archiveImage];
+        data.status = "Unpublished";
+
+        async function updateStatus(id, data) {
+            console.log(data)
+            try {
+                const result = await updateProperty(id, data);
+                if (result.status === 200) {
+                    //redirect to home
+                    props.history.push({
+                        pathname: '/',
+                        state: {user: user}
+                    });
+                } else {
+                    alertMessage =
+                        &lt;Alert variant="warning">
+                            &lt;Alert.Heading>{result.message}&lt;/Alert.Heading>
+                        &lt;/Alert>
+                    setAlert(alertMessage);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        updateStatus(propertyId.id, data);
+    };
+
+    //handleSubmit is called whenever user sends messages
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        let alertMessage;
+        //get the owner of the property
+        const receiver = data.author.username;
+
+        //send a message
+        async function sendMsg(msg, receiver) {
+            //create an object to store information
+            const msgToSend = {
+                receiver: receiver,
+                msg: msg
+            }
+            //HTTP request
+            const result = await sendMessage(msgToSend);
+            if (result.status === 200) {
+                setAlert(alertMessage);
+                window.location.reload(false);
+                alertMessage =
+                    &lt;Alert variant="success">
+                        &lt;Alert.Heading>{result.message}&lt;/Alert.Heading>
+                    &lt;/Alert>
+            } else {
+                alertMessage =
+                    &lt;Alert variant="warning">
+                        &lt;Alert.Heading>{result.message}&lt;/Alert.Heading>
+                    &lt;/Alert>
+                setAlert(alertMessage);
+            }
+        }
+        sendMsg(msg, receiver);
+    };
+
+    //available buttons
+    //depends of the user (property owner or not)
+    let buttons;
+    //h1 text
+    let h1Text;
+    if (data.author &amp;&amp; user) {
+        if (data.author.id === user._id) {
+            if (data.status === "Unpublished") {
+                h1Text = &lt;h1 className="pageTitle">Hey {user.username}! How are you today?&lt;/h1>
+                buttons = &lt;div>
+                    &lt;Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property&lt;/Button>
+                    &lt;Button className="mx-1" variant="danger" onClick={handleClick}>Delete&lt;/Button>
+                &lt;/div>
+            } else {
+                h1Text = &lt;h1 className="pageTitle">Hey {user.username}! How are you today?&lt;/h1>
+                buttons = &lt;div>
+                    &lt;Button className="mx-1" onClick={() => archiveProperty({id})} variant="secondary">Archive&lt;/Button>
+                    &lt;Button className="mx-1" onClick={() => editProperty({id})} variant="warning">Edit Property&lt;/Button>
+                    &lt;Button className="mx-1" variant="danger" onClick={handleClick}>Delete&lt;/Button>
+                &lt;/div>
+            }
+        } else {
+            h1Text = &lt;h1 className="pageTitle">We hope you like it!&lt;/h1>
+            buttons = &lt;Accordion defaultActiveKey="0">
+                &lt;Card>
+                    &lt;Card.Header>
+                        &lt;Accordion.Toggle as={Button} variant="info" eventKey="1">
+                            Contact Seller
+                        &lt;/Accordion.Toggle>
+                    &lt;/Card.Header>
+                    &lt;Accordion.Collapse eventKey="1">
+                        &lt;Form onSubmit={handleSubmit}>
+                            &lt;Form.Control
+                                name="msg"
+                                onChange={e => setMsg(e.target.value)}
+                                required
+                                type="text"
+                                as="textarea"
+                                rows="3"
+                                placeholder="You have a nice..."
+                            />
+                            &lt;Button type="submit" variant="success">Send&lt;/Button>
+                        &lt;/Form>
+                    &lt;/Accordion.Collapse>
+                &lt;/Card>
+            &lt;/Accordion>
+
+        }
+    } else {
+        h1Text = &lt;h1 className="pageTitle">We hope you like it!&lt;/h1>
+        buttons = &lt;Accordion defaultActiveKey="0">
+            &lt;Card>
+                &lt;Card.Header>
+                    &lt;Accordion.Toggle as={Button} variant="info" eventKey="1">
+                        Contact Seller
+                    &lt;/Accordion.Toggle>
+                &lt;/Card.Header>
+                &lt;Accordion.Collapse eventKey="1">
+                    &lt;Form onSubmit={handleSubmit}>
+                        &lt;Form.Control
+                            name="msg"
+                            onChange={e => setMsg(e.target.value)}
+                            required
+                            type="text"
+                            as="textarea"
+                            rows="3"
+                            placeholder="You have a nice..."
+                        />
+                        &lt;Button type="submit" variant="success">Send&lt;/Button>
+                    &lt;/Form>
+                &lt;/Accordion.Collapse>
+            &lt;/Card>
+        &lt;/Accordion>
+    }
+
+    return (
+        &lt;div className="container">
+            {alert}
+            {h1Text}
+            &lt;Card className="singleCard">
+                &lt;Card.Img variant="top" src={data.image}/>
+                &lt;Card.Body>
+                    &lt;Card.Title id="cardTitle">{data.name}&lt;/Card.Title>
+                &lt;/Card.Body>
+                &lt;ListGroup className="list-group-flush">
+                    &lt;ListGroupItem>Status: {data.status}&lt;/ListGroupItem>
+                    &lt;ListGroupItem>Category: {data.category}&lt;/ListGroupItem>
+                    &lt;ListGroupItem>Description: {data.description}&lt;/ListGroupItem>
+                    &lt;ListGroupItem>Features:
+                        &lt;ListGroup className="list-group-flush">
+                            {listFeatures}
+                        &lt;/ListGroup>
+                    &lt;/ListGroupItem>
+                    &lt;ListGroupItem>Location: {data.location}&lt;/ListGroupItem>
+                &lt;/ListGroup>
+                &lt;Card.Footer>
+                    &lt;big className="text-muted">Price: {data.price}&lt;/big>
+                    {buttons}
+                &lt;/Card.Footer>
+            &lt;/Card>
+        &lt;/div>
+    );
+}
+
+/**
+ * The function will fetch a specific property from the RESTApi
+ *
+ * @name Get a property
+ * @param {Number} id - the id of the property
+ * @returns {Object} the response
+ */
+async function getProperty(id) {
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
+    
+    //all available features
+    const allFeatures = ['Beautiful garden', 'Barbeque', 'Pool', 'Balcony', 'Gym'];
+    try {
+        const settings = {method: 'Get', withCredentials: true, credentials: 'include', headers: headers};
+        //using node fetch to get the data from the API
+        const result = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/${id}`, settings)
+            .then(response =>
+                response.json().then(data => ({
+                        property: data.property,
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
+
+        if (result.status === 200) {
+            //if image exists
+            if (result.property.image) {
+                //store the image
+                archiveImage = result.property.image[0].filename;
+                //prepare the image for read as base64 string
+                result.property.image = ("data:image/png;base64," + result.property.image[0].img);
+            }
+            //current features
+            let features = []
+            //check which feature is true
+            //add it to an array
+            for (let i = 0; i &lt; allFeatures.length; i++) {
+                if (result.property.features[i]) {
+                    features.push(allFeatures[i]);
+                }
+            }
+            //set the features
+            result.property.features = features;
+        }
+
+        //return the response
+        return result;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+/**
+ * The function will delete a specific property
+ *
+ * @name Delete a property
+ * @param {Number} id - the id of the property
+ * @returns {Object} the response
+ */
+async function deleteProperty(id) {
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
+    try {
+        const settings = {method: 'delete', withCredentials: true, credentials: 'include', headers: headers};
+        //using node fetch to delete the selected property
+        //return the response
+        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/delete/${id}`, settings)
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+/**
+ * The function will send a message to a user
+ *
+ * @name Send a message
+ * @param {Object} msg - the message
+ * @returns {Object} the response
+ */
+async function sendMessage(msg) {
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
+    try {
+        const settings = {method: 'post', body: JSON.stringify(msg), withCredentials: true, credentials: 'include', headers: headers};
+        //using node fetch to send a message
+        return await fetch('https://program-nissan-3000.codio-box.uk/api/message/new', settings)
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+/**
+ * The function will archive an existing property
+ *
+ * @name Archive property
+ * @param {Number} id - the id of the property
+ * @param {Object} property - the property
+ * @returns {Object} the response
+ */
+async function updateProperty(id, property) {
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
+    let data;
+    //turn the object to json
+    data = JSON.stringify(property);
+    try {
+        const settings = {method: 'put', body: data, withCredentials: true, credentials: 'include', headers: headers};
+        //using node fetch to post the data to the API endpoint
+        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+            .then(response =>
+                response.json().then(data => ({
+                        message: data.message,
+                        status: response.status
+                    })
+                ).then(res => res));
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+/**
+ * The function will get the current user if one.
+ *
+ * @name Get user
+ * @param {Object} props - the react props
+ * @returns {Object} the current user info
+ * @returns {Boolean} false - if no user
+ */
+function getUser(props) {
+    let user;
+    if (props.location.state) {
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    return user;
+}
+
+/**
+ * The function will get all features and construct a list.
+ *
+ * @name List of features
+ * @param {Object} data - the property info
+ * @returns {Object} the list of features
+ */
+function getListOfFeatures(data) {
+    let listFeatures;
+    if (data.features) {
+        listFeatures = data.features.map((feature, index) =>
+            &lt;ListGroupItem key={index}>{feature}&lt;/ListGroupItem>
+        );
+    }
+    return listFeatures;
+}
+
+/**
+ * The function will get the mata for the headers.
+ *
+ * @name Get meta
+ * @returns {Map} meta - a map of key values
+ */
+function setMetaForHeaders() {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    const meta = new Map();
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    return meta;
+}
+
+export default withRouter(Property);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components_about.html">Components/about</a></li><li><a href="module-Components_edit-property.html">Components/edit-property</a></li><li><a href="module-Components_home.html">Components/home</a></li><li><a href="module-Components_index.html">Components/index</a></li><li><a href="module-Components_login.html">Components/login</a></li><li><a href="module-Components_new-property.html">Components/new-property</a></li><li><a href="module-Components_profile.html">Components/profile</a></li><li><a href="module-Components_property.html">Components/property</a></li><li><a href="module-Components_register.html">Components/register</a></li><li><a href="module-Layout_footer.html">Layout/footer</a></li><li><a href="module-Layout_index.html">Layout/index</a></li><li><a href="module-Layout_navbar.html">Layout/navbar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Nov 24 2020 17:14:16 GMT+0000 (GMT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,3 +1,8 @@
+/**
+ * @module Components/property
+ * @description Property page function component
+ * @author Mitko Donchev
+ */
 import React, {useEffect, useState} from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
@@ -19,25 +24,16 @@ let archiveImage;
  *
  * @name Property page
  * @param {Object} props
- * @returns {DOMRect} the jsx code which represents the home page
+ * @returns {DOMRect} the jsx code which represents the property page
  */
 const Property = (props) => {
     //get the user from the props state
-    let user;
-    if (props.location.state) {
-        user = props.location.state.user;
-    } else {
-        user = false;
-    }
-
+    const user = getUser(props);
     //using react hook function useState
     //to keep the state of the data
     const [data, setData] = useState([]);
     //keep the state of the msg
     const [msg, setMsg] = useState("");
-    //list of features will be stored here
-    let listFeatures;
-
     //get the property id from the params using react hook
     const {id} = useParams();
     //store the alert
@@ -55,7 +51,7 @@ const Property = (props) => {
                 setData(result.property);
             } else {
                 alertMessage =
-                    <Alert variant="warning">
+                    <Alert variant="danger">
                         <Alert.Heading>{result.message}</Alert.Heading>
                     </Alert>
                 setAlert(alertMessage);
@@ -65,13 +61,8 @@ const Property = (props) => {
         fetchData();
     }, [id]);
 
-    //get each property from the data
-    //and create a list
-    if (data.features) {
-        listFeatures = data.features.map((feature) =>
-            <ListGroupItem>{feature}</ListGroupItem>
-        );
-    }
+    //creat a list of all properties
+    const listFeatures = getListOfFeatures(data);
 
     //handleSubmit is called whenever the delete button is clicked
     const handleClick = (e) => {
@@ -96,7 +87,6 @@ const Property = (props) => {
                         </Alert>
                     setAlert(alertMessage);
                 }
-
             } catch (err) {
                 console.log(err);
             }
@@ -182,7 +172,6 @@ const Property = (props) => {
                 setAlert(alertMessage);
             }
         }
-
         sendMsg(msg, receiver);
     };
 
@@ -298,24 +287,16 @@ const Property = (props) => {
  * @returns {Object} the response
  */
 async function getProperty(id) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
-
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
+    
     //all available features
     const allFeatures = ['Beautiful garden', 'Barbeque', 'Pool', 'Balcony', 'Gym'];
-
-    //set new header in order to add the credentials
-    let headers = new Headers();
-
-    //auth credentials to access the backend API
-    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-
     try {
         const settings = {method: 'Get', withCredentials: true, credentials: 'include', headers: headers};
-
         //using node fetch to get the data from the API
-        const result = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+        const result = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/${id}`, settings)
             .then(response =>
                 response.json().then(data => ({
                         property: data.property,
@@ -324,24 +305,26 @@ async function getProperty(id) {
                     })
                 ).then(res => res));
 
-        //if image exists
-        if (result.property.image) {
-            //store the image
-            archiveImage = result.property.image[0].filename;
-            //prepare the image for read as base64 string
-            result.property.image = ("data:image/png;base64," + result.property.image[0].img);
-        }
-        //current features
-        let features = []
-        //check which feature is true
-        //add it to an array
-        for (let i = 0; i < allFeatures.length; i++) {
-            if (result.property.features[i]) {
-                features.push(allFeatures[i]);
+        if (result.status === 200) {
+            //if image exists
+            if (result.property.image) {
+                //store the image
+                archiveImage = result.property.image[0].filename;
+                //prepare the image for read as base64 string
+                result.property.image = ("data:image/png;base64," + result.property.image[0].img);
             }
+            //current features
+            let features = []
+            //check which feature is true
+            //add it to an array
+            for (let i = 0; i < allFeatures.length; i++) {
+                if (result.property.features[i]) {
+                    features.push(allFeatures[i]);
+                }
+            }
+            //set the features
+            result.property.features = features;
         }
-        //set the features
-        result.property.features = features;
 
         //return the response
         return result;
@@ -358,24 +341,16 @@ async function getProperty(id) {
  * @returns {Object} the response
  */
 async function deleteProperty(id) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
-
-    //set new header in order to add the credentials
-    let headers = new Headers();
-    //auth credentials to access the backend API
-    headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
     try {
         const settings = {method: 'delete', withCredentials: true, credentials: 'include', headers: headers};
-
         //using node fetch to delete the selected property
         //return the response
-        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/delete/${id}`, settings)
             .then(response =>
                 response.json().then(data => ({
-                        properties: data.properties,
                         message: data.message,
                         status: response.status
                     })
@@ -393,27 +368,11 @@ async function deleteProperty(id) {
  * @returns {Object} the response
  */
 async function sendMessage(msg) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
-
-    const meta = new Map();
-    //set the content type
-    meta.set('Content-Type', 'application/json');
-    //auth credentials to access the backend API
-    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-    //set new header in order to add the credentials and type
-    let headers = new Headers(meta);
-
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
     try {
-        const settings = {
-            method: 'post',
-            body: JSON.stringify(msg),
-            withCredentials: true,
-            credentials: 'include',
-            headers: headers
-        };
-
+        const settings = {method: 'post', body: JSON.stringify(msg), withCredentials: true, credentials: 'include', headers: headers};
         //using node fetch to send a message
         return await fetch('https://program-nissan-3000.codio-box.uk/api/message/new', settings)
             .then(response =>
@@ -436,24 +395,14 @@ async function sendMessage(msg) {
  * @returns {Object} the response
  */
 async function updateProperty(id, property) {
-    //get the username and password from env variables
-    const username = process.env.REACT_APP_USERNAME;
-    const password = process.env.REACT_APP_PASSWORD;
+    //get the mata and set the headers
+    const meta = setMetaForHeaders();
+    const headers = new Headers(meta);
     let data;
-    const meta = new Map();
-
     //turn the object to json
     data = JSON.stringify(property);
-    //set the content type
-    meta.set('Content-Type', 'application/json');
-    //auth credentials to access the backend API
-    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-    //set new header in order to add the credentials and type
-    let headers = new Headers(meta);
-
     try {
         const settings = {method: 'put', body: data, withCredentials: true, credentials: 'include', headers: headers};
-
         //using node fetch to post the data to the API endpoint
         return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
             .then(response =>
@@ -465,6 +414,61 @@ async function updateProperty(id, property) {
     } catch (err) {
         console.log(err);
     }
+}
+
+/**
+ * The function will get the current user if one.
+ *
+ * @name Get user
+ * @param {Object} props - the react props
+ * @returns {Object} the current user info
+ * @returns {Boolean} false - if no user
+ */
+function getUser(props) {
+    let user;
+    if (props.location.state) {
+        user = props.location.state.user;
+    } else {
+        user = false;
+    }
+    return user;
+}
+
+/**
+ * The function will get all features and construct a list.
+ *
+ * @name List of features
+ * @param {Object} data - the property info
+ * @returns {Object} the list of features
+ */
+function getListOfFeatures(data) {
+    let listFeatures;
+    if (data.features) {
+        listFeatures = data.features.map((feature, index) =>
+            <ListGroupItem key={index}>{feature}</ListGroupItem>
+        );
+    }
+    return listFeatures;
+}
+
+/**
+ * The function will get the mata for the headers.
+ *
+ * @name Get meta
+ * @returns {Map} meta - a map of key values
+ */
+function setMetaForHeaders() {
+    //get the username and password from env variables
+    const username = process.env.REACT_APP_USERNAME;
+    const password = process.env.REACT_APP_PASSWORD;
+
+    const meta = new Map();
+    //set the content type
+    meta.set('Content-Type', 'application/json');
+    //auth credentials to access the backend API
+    meta.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+    //set new header in order to add the credentials and type
+    return meta;
 }
 
 export default withRouter(Property);
