@@ -42,11 +42,11 @@ const EditProperty = (props) => {
     const [description, setDescription] = useState("");
 
     //set features variables which state will be checked
-    const [garden, setGarden] = useState();
-    const [balcony, setBalc] = useState();
-    const [pool, setPool] = useState();
-    const [barbeque, setBarb] = useState();
-    const [gym, setGym] = useState();
+    const [garden, setGarden] = useState(false);
+    const [balcony, setBalc] = useState(false);
+    const [pool, setPool] = useState(false);
+    const [barbeque, setBarb] = useState(false);
+    const [gym, setGym] = useState(false);
     //store the alert
     const [alert, setAlert] = useState();
 
@@ -264,13 +264,6 @@ const EditProperty = (props) => {
                         </Form.Control.Feedback>
                     </Form.Group>
                 </Form.Row>
-                <Form.Group>
-                    <Form.Check
-                        required
-                        label="Agree to terms and conditions"
-                        feedback="You must agree before submitting."
-                    />
-                </Form.Group>
                 <Button className="round" type="submit" variant="success">Update!</Button>
             </Form>
         </div>
@@ -311,23 +304,23 @@ async function getProperty(id) {
                     })
                 ).then(res => res));
 
-        //current features
-        let features = []
-
-        //check which feature is true
-        //add it to an array
-        for (let i = 0; i < allFeatures.length; i++) {
-            if (result.property.features[i]) {
-                features.push(allFeatures[i]);
+         if(result.status === 200) {         
+            let features = []
+            //check which feature is true
+            //add it to an array
+            for (let i = 0; i < allFeatures.length; i++) {
+                if (result.property.features[i]) {
+                    features.push(allFeatures[i]);
+                }
             }
+            //set the features
+            result.property.features = features;            
         }
-        result.property.features = features;
 
-        //return the data fetched from the API endpoint
+        //return the response
         return result;
     } catch (err) {
-        alert("An error has occured while getData!");
-        throw new Error("An error has occured while getData!");
+        console.log(err);
     }
 }
 

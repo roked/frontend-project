@@ -230,13 +230,6 @@ const NewProperty = (props) => {
                         </Form.Control.Feedback>
                     </Form.Group>
                 </Form.Row>
-                <Form.Group>
-                    <Form.Check
-                        required
-                        label="Agree to terms and conditions"
-                        feedback="You must agree before submitting."
-                    />
-                </Form.Group>
                 <Button className="round" type="submit" variant="success">Publish property!</Button>
             </Form>
         </div>

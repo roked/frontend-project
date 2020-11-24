@@ -77,7 +77,7 @@ const Home = (props) => {
                 setData(result.properties);
                 //if the filter data is empty
                 if(dataFilter.length === 0) {
-                    setFilter(result);
+                    setFilter(result.properties);
                 }
             } else {
                 alertMessage =

@@ -55,7 +55,7 @@ const Property = (props) => {
                 setData(result.property);
             } else {
                 alertMessage =
-                    <Alert variant="warning">
+                    <Alert variant="danger">
                         <Alert.Heading>{result.message}</Alert.Heading>
                     </Alert>
                 setAlert(alertMessage);
@@ -68,8 +68,8 @@ const Property = (props) => {
     //get each property from the data
     //and create a list
     if (data.features) {
-        listFeatures = data.features.map((feature) =>
-            <ListGroupItem>{feature}</ListGroupItem>
+        listFeatures = data.features.map((feature, index) =>
+            <ListGroupItem key={index} >{feature}</ListGroupItem>
         );
     }
 
@@ -315,7 +315,7 @@ async function getProperty(id) {
         const settings = {method: 'Get', withCredentials: true, credentials: 'include', headers: headers};
 
         //using node fetch to get the data from the API
-        const result = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+        const result = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/${id}`, settings)
             .then(response =>
                 response.json().then(data => ({
                         property: data.property,
@@ -324,24 +324,26 @@ async function getProperty(id) {
                     })
                 ).then(res => res));
 
-        //if image exists
-        if (result.property.image) {
-            //store the image
-            archiveImage = result.property.image[0].filename;
-            //prepare the image for read as base64 string
-            result.property.image = ("data:image/png;base64," + result.property.image[0].img);
-        }
-        //current features
-        let features = []
-        //check which feature is true
-        //add it to an array
-        for (let i = 0; i < allFeatures.length; i++) {
-            if (result.property.features[i]) {
-                features.push(allFeatures[i]);
+         if(result.status === 200) {
+            //if image exists
+            if (result.property.image) {
+                //store the image
+                archiveImage = result.property.image[0].filename;
+                //prepare the image for read as base64 string
+                result.property.image = ("data:image/png;base64," + result.property.image[0].img);
             }
+            //current features
+            let features = []
+            //check which feature is true
+            //add it to an array
+            for (let i = 0; i < allFeatures.length; i++) {
+                if (result.property.features[i]) {
+                    features.push(allFeatures[i]);
+                }
+            }
+            //set the features
+            result.property.features = features;            
         }
-        //set the features
-        result.property.features = features;
 
         //return the response
         return result;
@@ -372,10 +374,9 @@ async function deleteProperty(id) {
 
         //using node fetch to delete the selected property
         //return the response
-        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+        return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/delete/${id}`, settings)
             .then(response =>
                 response.json().then(data => ({
-                        properties: data.properties,
                         message: data.message,
                         status: response.status
                     })

@@ -81,7 +81,7 @@ const Profile = (props) => {
                 setData(result.properties);
                 //if the filter data is empty
                 if (dataFilter.length === 0) {
-                    setFilter(result);
+                    setFilter(result.properties);
                 }
             } else {
                 alertProperties =
@@ -93,7 +93,7 @@ const Profile = (props) => {
 
             if (history.status === 200) {
                 //save responses to variable
-                setMsgData(history);
+                setMsgData(history.history);
             } else {
                 alertMessages =
                     <Alert variant="danger">
