@@ -258,7 +258,7 @@ const NavbarL = (props) => {
   return (
         <div>
             <Navbar bg="dark" variant="dark" expand="lg">
-                <Navbar.Brand href="#">Real Estate Listing</Navbar.Brand>
+                <Navbar.Brand onClick={() => goHome()}>Real Estate Listing</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="mr-auto">

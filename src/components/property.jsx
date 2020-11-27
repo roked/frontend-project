@@ -343,8 +343,7 @@ const Property = (props) => {
     e.preventDefault();
     let alertMessage;
     // get the owner of the property
-    const receiver = data.author.username;
-
+    const receiver = (data.author) ? data.author.username : false;
     // send a message
     async function sendMsg() {
       // create an object to store information

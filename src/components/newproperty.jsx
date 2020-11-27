@@ -205,6 +205,7 @@ const NewProperty = (props) => {
                           onChange={(e) => setCategory(e.target.value)}
                           custom
                           required
+                          data-testid="select-one"
                         >
                             <option>--Please Select--</option>
                             <option>Commercial</option>
@@ -240,6 +241,7 @@ const NewProperty = (props) => {
                           onChange={(e) => setStatus(e.target.value)}
                           custom
                           required
+                          data-testid="select-multiple"
                         >
                             <option>--Please Select--</option>
                             <option>New</option>
@@ -251,7 +253,7 @@ const NewProperty = (props) => {
                     <Form.Group as={Col} md="3" controlId="validationFile">
                         <Form.Label>Attach Images</Form.Label>
                         <Form.File
-                          id="files-input"
+                          data-testid="files-input"
                           name="images"
                           defaultValue={images}
                           onChange={(e) => setImages(e.target.files)}
