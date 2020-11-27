@@ -82,3 +82,11 @@ If you want to check the OpenAPI and JSDoc (with schemas) you have to run:
 ```javascript
    node docs.js
 ``` 
+
+# Run testing
+
+Two tests can be performed on this client
+
+1. ```npm test``` - this will run React Testing Library with Jest on all components
+
+2. ```npm run linter``` or ```npm run linter -- --fix``` - this will run Eslint with predefined rules from AirBnB. 
