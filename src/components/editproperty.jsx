@@ -252,7 +252,7 @@ const EditProperty = (props) => {
       let alertMessage;
       try {
         // send HTTP request
-        const result = await updateProperty(id, images, data);
+        const result = await updateProperty(id, images, updatedData);
         if (result.status === 200) {
           // redirect to home page
           props.history.push({
