@@ -54,7 +54,7 @@ async function signIn(user) {
 
     // using node fetch to post the data to the API endpoint
     // return the response
-    return await fetch('https://program-nissan-3000.codio-box.uk/api/user/login', settings)
+    return await fetch('https://full-stack-project-md.herokuapp.com/api/user/login', settings)
       .then((response) => response.json().then((data) => ({
         user: data.user,
         message: data.message,
