@@ -73,7 +73,7 @@ async function getProperties(currentUser) {
       headers,
     };
     // using node fetch to get the data from the API
-    const result = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
+    const result = await fetch('https://full-stack-project-md.herokuapp.com/api/property/show', settings)
       .then((response) => response.json().then((data) => ({
         properties: data.properties,
         message: data.message,
@@ -116,7 +116,7 @@ async function getHistory() {
     };
     // using node fetch to get the data from the API
     // return the response
-    return await fetch('https://program-nissan-3000.codio-box.uk/api/message/get', settings)
+    return await fetch('https://full-stack-project-md.herokuapp.com/api/message/get', settings)
       .then((response) => response.json().then((data) => ({
         history: data.history,
         message: data.message,
@@ -144,7 +144,7 @@ async function deleteMessage(id) {
     };
     // using node fetch to delete the selected message
     // return the response
-    return await fetch(`https://program-nissan-3000.codio-box.uk/api/message/${id}`, settings)
+    return await fetch(`https://full-stack-project-md.herokuapp.com/api/message/${id}`, settings)
       .then((response) => response.json().then((data) => ({
         message: data.message,
         status: response.status,

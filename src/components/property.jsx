@@ -76,7 +76,7 @@ async function getProperty(id) {
       method: 'Get', withCredentials: true, credentials: 'include', headers,
     };
     // using node fetch to get the data from the API
-    const result = await fetch(`https://program-nissan-3000.codio-box.uk/api/property/${id}`, settings)
+    const result = await fetch(`https://full-stack-project-md.herokuapp.com/api/property/${id}`, settings)
       .then((response) => response.json().then((data) => ({
         property: data.property,
         message: data.message,
@@ -128,7 +128,7 @@ async function deleteProperty(id) {
     };
     // using node fetch to delete the selected property
     // return the response
-    return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/delete/${id}`, settings)
+    return await fetch(`https://full-stack-project-md.herokuapp.com/api/property/delete/${id}`, settings)
       .then((response) => response.json().then((data) => ({
         message: data.message,
         status: response.status,
@@ -154,7 +154,7 @@ async function sendMessage(msg) {
       method: 'post', body: JSON.stringify(msg), withCredentials: true, credentials: 'include', headers,
     };
     // using node fetch to send a message
-    return await fetch('https://program-nissan-3000.codio-box.uk/api/message/new', settings)
+    return await fetch('https://full-stack-project-md.herokuapp.com/api/message/new', settings)
       .then((response) => response.json().then((data) => ({
         message: data.message,
         status: response.status,
@@ -183,7 +183,7 @@ async function updateProperty(id, property) {
       method: 'put', body: data, withCredentials: true, credentials: 'include', headers,
     };
     // using node fetch to post the data to the API endpoint
-    return await fetch(`https://program-nissan-3000.codio-box.uk/api/property/show/${id}`, settings)
+    return await fetch(`https://full-stack-project-md.herokuapp.com/api/property/show/${id}`, settings)
       .then((response) => response.json().then((item) => ({
         message: item.message,
         status: response.status,

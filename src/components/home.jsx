@@ -69,7 +69,7 @@ async function getProperties() {
       method: 'post', withCredentials: true, credentials: 'include', headers,
     };
     // using node fetch to get the data from the API
-    const result = await fetch('https://program-nissan-3000.codio-box.uk/api/property/show', settings)
+    const result = await fetch('https://full-stack-project-md.herokuapp.com/api/property/show', settings)
       .then((response) => response.json().then((data) => ({
         properties: data.properties,
         message: data.message,

@@ -52,7 +52,7 @@ async function registerUser(user) {
     };
     // using node fetch to post the data to the API endpoint
     // return the response
-    return await fetch('https://program-nissan-3000.codio-box.uk/api/user/register', settings)
+    return await fetch('https://full-stack-project-md.herokuapp.com/api/user/register', settings)
       .then((response) => response.json().then((data) => ({
         message: data.message,
         status: response.status,
